@@ -37,10 +37,7 @@ app.use(express.static(publicDir))
 
 //Index route
 app.get('/', (req, response) => {
-    var res=[]
-    var finalAns = [];
-    var url;
-    response.render('index', { res,layout:false,finalAns,url});
+    response.render('index');
   });
 
 //connect to server
