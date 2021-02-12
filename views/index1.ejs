@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vicinity</title>
+</head>
+<body>
+
+  <!--Form for searching place by URL of image-->
+  <!-- <form class="inp-form" id="input-form1" method="POST" action="">
+    
+      <H1>Explore</H1>
+      <div class="txtb">
+        <input type="text" name="url" placeholder="Enter URL of image" id="url" >
+        <input type="text" name="state" placeholder="Enter State" id="state" >
+      </div>
+      <input type="hidden" name="lat"  id="lat1" value="">
+      <input type="hidden" name="long" id="long1" value="">
+      <input type="hidden" name="test" id="test1"value="">
+      <button type="submit" id="btn1" value="submit" class="btn btn-primary form-btn">Submit</button>
+    
+  </form> -->
+
+  <!-- Form for searching place by uploading image -->
+  <form class="inp-form1" id="input-form2" method="POST" enctype="multipart/form-data" action="">
+    <H1>Search by image</H1>
+    <div class="txtb">
+      <input type="text" name="state" placeholder="Enter State" id="state1" >
+    </div>
+    <input type="file" name="file" class="form-control-file file-choose" id="exampleInputFile" aria-describedby="fileHelp">
+    <input type="hidden" name="lat"  id="lat2" value="">
+    <input type="hidden" name="long" id="long2" value="">
+    <input type="hidden" name="test" id="test2"value="">
+    <button type="submit" value="submit" class="btn btn-primary form-btn">Submit</button>
+  
+  </form>
+
+
+  </form>
+
+</body>
+</html>

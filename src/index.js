@@ -38,7 +38,7 @@ app.use(express.static(publicDir))
 
 //Index route
 app.get('/', (req, response) => {
-    response.render('index');
+    response.render('index1');
   });
 
 //connect to server
