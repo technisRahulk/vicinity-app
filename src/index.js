@@ -6,6 +6,7 @@ const fs = require('fs')
 const ejs = require('ejs')
 const path = require('path')
 const request=require('request')
+const States = require('./models/states.js')
 
 //Express server setup
 const app = express();
