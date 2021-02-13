@@ -11,6 +11,7 @@ const request=require('request');
 const urlExist = require('url-exist');
 const {flickr, search, simIndex}=require('./utils/flickr')
 const States = require('./models/states.js')
+const trackData = require("./utils/finalAlgo");
 const Admin=require('./models/admin')
 const auth=require('./middleware/auth')
 const cookieParser = require("cookie-parser");
