@@ -6,9 +6,12 @@ const fs = require('fs')
 const ejs = require('ejs')
 const path = require('path')
 const request=require('request')
-const urlExist = require("url-exist");
+//const urlExist = require("url-exist");
 const {flickr, search}=require('./utils/flickr')
 const States = require('./models/states.js')
+const Admin=require('./models/admin')
+const auth=require('./middleware/auth')
+const cookieParser = require("cookie-parser");
 
 //Express server setup
 const app = express();
@@ -37,6 +40,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}))
 const publicDir=path.join(__dirname,'./../public')
 app.use(express.static(publicDir))
+app.use(cookieParser());
 
 //Index route
 app.get('/', (req, response) => {
@@ -194,5 +198,79 @@ app.get('/update/:stateInput', (req, res) => {
   })
 })
 
+//sign-up route
+app.post('/admin/signup',async (req,res)=> //sign up
+{
+    const data=req.body // contains the posted data
+    const admin=new Admin(data)
+    try{
+        await admin.save()
+        const token=await admin.generateAuthToken()
+        res.cookie("token", token, { httpOnly: true })
+        //res.send({admin,token})
+        res.redirect('/dashboard');
+    }catch(e)
+    {
+        res.status(400).send(e)
+    }
+})
+
+//sign-up form
+app.get('/signup',(req,res)=>
+{
+  const token = req.cookies.token;
+  //console.log(req.cookies.token)
+  if(!token)
+  {
+    return res.render('signupform')
+  }
+  res.redirect('/dashboard');
+})
+
+//dashboard route
+app.get('/dashboard',auth,async(req,res)=>
+{
+  res.render('dashboard')
+})
+
+//login form
+app.get('/login',async(req,res)=>
+{
+    const token = req.cookies.token;
+    //console.log(req.cookies.token)
+    if(!token)
+    {
+      return res.render('loginform')
+    }
+    res.redirect('/dashboard');
+})
+
+//login route
+app.post('/admin/login',async (req,res)=> 
+{
+    try{
+      const admin=await Admin.findByCredentials(req.body.email,req.body.password)
+      const token=await admin.generateAuthToken()
+      res.cookie("token", token, { httpOnly: true })
+      res.render('dashboard',{admin,token});
+    }catch(e)
+    {
+        res.status(400).send(e)
+    }
+})
+
+//logout route
+app.post('/admin/logout',auth,async(req,res)=>
+{
+    try
+    {
+      res.clearCookie("token");
+      res.send({ success: true });
+    }
+    catch(e)
+    {
+      res.status(400).send('Unable to verify')
+    }
+})
 //connect to server
 app.listen(port, () => console.log("Server is running on port " + port));

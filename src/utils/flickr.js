@@ -30,7 +30,7 @@ const search=(searchUrl,callback)=>{
         return callback("Please insert an URL of a valid image file.", undefined)
     }
     // Link from deployed app
-    const url='' + searchUrl
+    //const url='' + searchUrl
     //console.log(url)
     request({url,json:true},(error,body)=>{
         // console.log(error);
