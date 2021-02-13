@@ -46,7 +46,7 @@ app.use(cookieParser());
 
 //Index route
 app.get('/', (req, response) => {
-    response.render('index1');
+    response.render('index');
   });
 
 //insert photos array (url only) for a given city (state is hardcoded as of now)
