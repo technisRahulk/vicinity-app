@@ -5,9 +5,9 @@ const bodyParser = require('body-parser')
 const fs = require('fs')
 const ejs = require('ejs')
 const path = require('path')
-const request=require('request')
-//const urlExist = require("url-exist");
-const {flickr, search}=require('./utils/flickr')
+const request=require('request');
+const urlExist = require('url-exist');
+const {flickr, search, simIndex}=require('./utils/flickr')
 const States = require('./models/states.js')
 const Admin=require('./models/admin')
 const auth=require('./middleware/auth')
@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 
 // configuration for environment variables
-require("dotenv").config();
+require("dotenv").config({path:'./../.env'});
 
 //Port setup
 const port = process.env.PORT || 7000;
@@ -105,6 +105,8 @@ app.get('/insert/:city',(req,res)=>{
       })
   })
 })
+
+
 
 // route for updating tags in city
 app.get('/update/:stateInput', (req, res) => {
@@ -272,5 +274,103 @@ app.post('/admin/logout',auth,async(req,res)=>
       res.status(400).send('Unable to verify')
     }
 })
+const {Heap} = require('heap-js');
+
+const customPriorityComparator = (a,b) =>{
+    return a.score-b.score;
+}
+
+// route for user to search place by URL of image
+app.post('/searchbyurl',(req,response)=>{
+  console.log("searchbyurl route invoked")
+  console.log("User Cooridinates: ",req.body.lat,req.body.long)
+  var imgURL=req.body.url
+  var reqState=req.body.state.toLowerCase()
+  // console.log(reqState)
+  var user_arr=[]
+  //console.log(imgURL);
+  search(imgURL, (err, res) => {
+    if(err){
+      console.log(err);
+      return response.render('error', {err})
+    }
+    // console.log(res)
+    user_arr=res
+    // console.log("res.body -----> \n" + res[0])
+    States.findOne({name : reqState})
+      .then(state => {
+        if(state){
+          var cities = state.cities
+          var max = 0
+          var city_id, photo_id
+          const minHeap = new Heap(customPriorityComparator);
+          let myMap = new Map();
+          var duplicates = {};
+          var curArr = [];
+          for(var i=0; i<cities.length; i++){
+            var city = cities[i]
+            for(var j=0;j<city.photos.length;j++){
+              if(city.photos[j].isActive){
+                if(curArr.length < 6){
+                  if(!duplicates[city.photos[j].url]){
+                    duplicates[city.photos[j].url] = 1;
+                    curArr.push({city_id:i, photo_id:j, score:simIndex(city.photos[j].tags,user_arr)});
+                  }
+                  if(curArr.length==6){
+                    minHeap.init(curArr);
+                    for(var k=0;k<curArr.length;k++){
+                      myMap.set('city_id='+curArr[k].city_id+'photo_id='+curArr[k].photo_id+'score='+curArr[k].score, k);
+                    }
+                  }
+                } else {
+                  var sim = simIndex(city.photos[j].tags,user_arr);
+                  var score = sim;
+                  var obj = minHeap.top();
+
+                  if(duplicates[city.photos[j].url]) continue;
+                  duplicates[city.photos[j].url] = 1;
+                  if(score<obj[0].score) continue;
+                  var id = myMap.get('city_id='+obj[0].city_id+'photo_id='+obj[0].photo_id+'score='+obj[0].score)
+                  myMap.delete('city_id='+obj[0].city_id+'photo_id='+obj[0].photo_id+'score='+obj[0].score)
+                  curArr[id] = {city_id:i, photo_id:j, score:sim};
+                  if(!(0<=id && id<6)){
+                    console.log(id);
+                  }
+                  minHeap.pop();
+                  minHeap.push({city_id:i, photo_id:j, score:sim});
+                  myMap.set('city_id='+i+'photo_id='+j+'score='+score,id);
+                }
+              }
+            }
+          }
+          let res=[]
+          for(var i=0;i<curArr.length;i++){
+            var city_index=curArr[i].city_id
+            var photo_index = curArr[i].photo_id
+            console.log(curArr[i].score)
+            var obj = {
+              city : cities[city_index].name,
+              url : cities[city_index].photos[photo_index].url
+            }
+            console.log(obj)
+            res.push(obj)
+          }
+          var finalAns=[]
+          var url=imgURL
+          response.render('index', {
+            res,finalAns,url
+          })
+        } else {
+          response.render('errror', {err: "The State doesn't has ample amount of scenic places"})
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        response.render('error', {err: error})
+      })
+  })
+})
+
+
 //connect to server
 app.listen(port, () => console.log("Server is running on port " + port));
