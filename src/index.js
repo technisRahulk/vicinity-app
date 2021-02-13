@@ -793,6 +793,322 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
 })
 
 
+
+// The main route
+app.post("/searchGlobal", upload.single('file1'), async (req, response) => {
+  var state_, url_, district_, county_, city_, locality_;
+  console.log("searchGlobal route invoked")
+  const tempPath = req.file.originalname;
+  var uploadPath = __dirname + `./../public/uploads/` + tempPath
+  console.log(uploadPath)
+  await imgur.uploadFile(uploadPath)
+    .then(function(json){
+      url = json.data.link
+    })
+    .then(() => {
+      fs.unlinkSync(uploadPath)
+      console.log("Deleted file: " + uploadPath)
+    })
+    .catch(err => {
+      console.log(err)
+      return response.send('error', {err})
+    })
+  console.log(url)
+  console.log(req.body.lat)
+  console.log(req.body.long)
+  if(req.body.lat && req.body.long){
+    var lat_ = req.body.lat, long_ =req.body.long;
+    ////USE BELOW FOR DEV/TEST PUROPSE ONLY////
+  
+    // lat_ = String(28+(6*Math.random()-3));
+    // long_ = String(77+(6*Math.random()-3));
+
+    // lat_ = String(26.38637274811449);
+    // long_ = String(74.85117091779458);
+
+
+    console.log("Here: ---- >  ",lat_,long_);
+    //////////////////////////////////////
+    var x;
+    try{
+      x = await city(lat_, long_);
+    } catch(err) {
+      response.render('error', {err})
+    }
+    
+    console.log("x: ",x);
+    state_ = x.State;
+    district_ = x.District;
+    county_ = x.County;
+    town_=x.town;
+    city_=x.city;
+    locality_=x.locality;
+    console.log("Here: ---- >  ",state_,district_);
+  } else {
+    state_ = req.body.state;
+    district_ = req.body.district;
+  }
+
+
+
+  async function cb(globalArr) {
+    var promiseArr = [];
+    console.log(globalArr);
+    var i=0,j=0;
+    for(i=0;i<globalArr.length;i++){
+      for(j=0;j<globalArr[i].length;j++){
+        globalArr[i][j] = {...globalArr[i][j],"i":i,"j":j};
+      }
+    }
+
+    for(i=0;i<globalArr.length;i++){
+        for(j=0;j<globalArr[i].length;j++){
+          promiseArr.push(new Promise((resolve,reject)=>{
+            var tt = [];
+            console.log("Heree----",district_,globalArr[i][j].city)
+            Object.assign(tt,globalArr[i][j]);
+
+
+
+            searchDist(city_,globalArr[i][j].state,(err,res)=>{
+                if(res===undefined || err || res.distance>4000){
+
+
+
+                  searchDist(city_,globalArr[tt.i][tt.j].city,(err,res)=>{
+                    if(res===undefined || err || res.distance>4000){
+
+
+                        searchDist(locality_,globalArr[tt.i][tt.j].state,(err,res)=>{
+                            if(res===undefined || err || res.distance>4000 ){
+
+                              searchDist(locality_,globalArr[tt.i][tt.j].city,(err,res)=>{
+                      
+                                if(res===undefined || err || res.distance>4000 ){
+
+                                  searchDist(district_,globalArr[tt.i][tt.j].state,(err,res)=>{
+                          
+                                    if(res===undefined || err || res.distance>4000 ){
+
+                                      searchDist(district_,globalArr[tt.i][tt.j].city,(err,res)=>{
+                              
+                                        if(res===undefined || err || res.distance>4000 ){
+
+                                          searchDist(town_,globalArr[tt.i][tt.j].state,(err,res)=>{
+                                  
+                                            if(res===undefined || err || res.distance>4000 ){
+
+                                              searchDist(town_,globalArr[tt.i][tt.j].city,(err,res)=>{
+                                      
+                                                if(res===undefined || err || res.distance>4000 ){
+
+                                                  searchDist(county_,globalArr[tt.i][tt.j].state,(err,res)=>{
+                                          
+                                                    if(res===undefined || err || res.distance>4000 ){
+
+                                                      searchDist(county_,globalArr[tt.i][tt.j].city,(err,res)=>{
+                                              
+                                                        if(res===undefined || err || res.distance>4000 ){
+
+                                                          searchDist(state_,globalArr[tt.i][tt.j].state,(err,res)=>{
+                                                  
+                                                            if(res===undefined || err || res.distance>4000 ){
+
+                                                              searchDist(state_,globalArr[tt.i][tt.j].city,(err,res)=>{
+                                                      
+                                                                if(err) {
+                                                                  console.log(err)
+                                                                  var temp = {...tt,"dist":"Unknown"};
+                                                                  globalArr[tt.i][tt.j] = temp;
+                                                                  resolve(res);
+                                                                }
+                                                                else {
+                                                                  var temp = {...tt,"dist":res.distance};
+                                                                  globalArr[tt.i][tt.j] = temp;
+                                                                  resolve(res);
+                                                                }
+                                                                
+                                                              })
+                                
+                                                            }
+                                                            else{
+                                                              var temp = {...tt,"dist":res.distance};
+                                                              globalArr[tt.i][tt.j] = temp;
+                                                              resolve(res);
+                                                            }
+                                                            
+                                                          })
+                            
+                                                        }
+                                                        else{
+                                                          var temp = {...tt,"dist":res.distance};
+                                                          globalArr[tt.i][tt.j] = temp;
+                                                          resolve(res);
+                                                        }
+                                                        
+                                                      })
+                        
+                                                    }
+                                                    else{
+                                                      var temp = {...tt,"dist":res.distance};
+                                                      globalArr[tt.i][tt.j] = temp;
+                                                      resolve(res);
+                                                    }
+                                                    
+                                                  })
+                    
+                                                }
+                                                else{
+                                                  var temp = {...tt,"dist":res.distance};
+                                                  globalArr[tt.i][tt.j] = temp;
+                                                  resolve(res);
+                                                }
+                                                
+                                              })
+                
+                                            }
+                                            else{
+                                              var temp = {...tt,"dist":res.distance};
+                                              globalArr[tt.i][tt.j] = temp;
+                                              resolve(res);
+                                            }
+                                            
+                                          })
+            
+                                        }
+                                        else{
+                                          var temp = {...tt,"dist":res.distance};
+                                          globalArr[tt.i][tt.j] = temp;
+                                          resolve(res);
+                                        }
+                                        
+                                      })
+        
+                                    }
+                                    else{
+                                      var temp = {...tt,"dist":res.distance};
+                                      globalArr[tt.i][tt.j] = temp;
+                                      resolve(res);
+                                    }
+                                    
+                                  })
+    
+                                }
+                                else{
+                                  var temp = {...tt,"dist":res.distance};
+                                  globalArr[tt.i][tt.j] = temp;
+                                  resolve(res);
+                                }
+                                
+                              })
+
+                            }
+                            else{
+                              var temp = {...tt,"dist":res.distance};
+                              globalArr[tt.i][tt.j] = temp;
+                              resolve(res);
+                            }
+                          
+                        })
+
+
+                      }
+                      else{
+                        var temp = {...tt,"dist":res.distance};
+                        globalArr[tt.i][tt.j] = temp;
+                        resolve(res);
+                      }
+                    
+                  })
+
+
+                }
+                else{
+                  var temp = {...tt,"dist":res.distance};
+                  globalArr[tt.i][tt.j] = temp;
+                  resolve(res);
+                }
+            })
+          }))
+        }
+    }
+    await Promise.all(promiseArr);
+    const customDistComparator = (a,b) =>{
+        return a.dist-b.dist;
+    }
+    var finalAns = [];
+    let myMap = new Map();
+    var temp = [];
+    finalAns.push(globalArr[0]);
+    for(i=0;i<globalArr[0].length;i++){
+      myMap.set(globalArr[0][i].url,1);
+    }
+    for(i=0;i<globalArr[1].length;i++){
+      if(myMap.has(globalArr[1][i].url)){
+        continue;
+      }
+      else temp.push(globalArr[1][i]);
+    }
+    finalAns.push(temp);
+    temp = [];
+    myMap.clear();
+    for(i=0;i<globalArr[1].length;i++){
+      myMap.set(globalArr[1][i].url,1);
+    }
+    for(i=0;i<globalArr[2].length;i++){
+      if(myMap.has(globalArr[2][i].url)){
+        continue;
+      }
+      else temp.push(globalArr[2][i]);
+    }
+    finalAns.push(temp);
+    temp = [];
+    myMap.clear();
+    for(i=0;i<globalArr[2].length;i++){
+      myMap.set(globalArr[2][i].url,1);
+    }
+    for(i=0;i<globalArr[3].length;i++){
+      if(myMap.has(globalArr[3][i].url)){
+        continue;
+      }
+      else temp.push(globalArr[3][i]);
+    }
+    finalAns.push(temp);
+    for(i=0;i<finalAns.length;i++) finalAns[i].sort(customDistComparator);
+    console.log('this is the one: ', finalAns);
+    var res=[]
+    response.render('index',{finalAns,res,url, state_});
+  }
+
+  ////USE BELOW FOR DEV/TEST PUROPSE ONLY////
+  //https://picsum.photos/200/300
+  //url = "https://picsum.photos/200/300";
+  // url = "https://source.unsplash.com/collection/483251";
+
+  // const reqUrlFun = (url)=>{
+  //   return new Promise((resolve,reject)=>{
+  //     request({url,json:true},(err,body)=>{
+  //         if(err) reject(err);
+  //         // console.log(body);
+  //         resolve(body.request.uri.href);
+  //     })
+  //   })
+  // }
+  
+  // var reqUrl = await reqUrlFun(url);
+  
+  //console.log("reqUrl***^^^***: ",url);
+  
+  //////////////////////////////////////
+
+  trackData(state_.toLowerCase(), district_, url, cb);
+
+})
+
+
+
+
+
 app.get("*", (req, res) => {
   res.status(404).send("Page Not Found!!!");
 })
