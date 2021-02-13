@@ -208,6 +208,127 @@ app.get('/', (req, response) => {
 
 // })
 
+
+app.post('/admin/singleInsert',(req,res)=>{
+  var insertUrl = req.body.url;
+  var insertCity = req.body.city;
+  var insertState = req.body.state;
+
+  console.log(insertUrl);
+
+
+  const fun = async function(){
+
+    const exists = await urlExist(insertUrl);
+
+    if(exists){
+      const doSearchFunc = (url)=>{
+        return new Promise((resolve,reject)=>{
+          search(url,(err,body)=>{
+            if(err) reject(err);
+            resolve(body);
+          })
+        })
+      }
+  
+      var insertTags = await doSearchFunc(insertUrl);
+
+      // console.log(insertTags);
+      var v =[];
+      for(var j=0;j<insertTags.length;j+=2){
+        v.push({
+          name:insertTags[j],
+          prob:insertTags[j+1]
+        })
+      }
+      insertTags=v;
+      // console.log(insertTags);
+      
+      States.findOne({name:insertState})
+      .then((state)=>{
+          if(state){
+            var city = state.cities.find(c => c.name === insertCity);
+            if(city){
+              city.photos.push({
+                url: insertUrl,
+                tags: insertTags,
+                isActive: true
+              })
+
+              state.save()
+                .then(()=>{
+                  console.log("Hoooooray! Single image insert successful!");
+                })
+                .catch((err)=>{
+                  console.log(err);
+                })
+            }
+            else{
+              state.cities.push({
+                name:insertCity,
+                photos:[{
+                  url: insertUrl,
+                  tags: insertTags,
+                  isActive: true
+                }]
+              })
+
+              state.save()
+                .then(()=>{
+                  console.log("Hoooooray! Single image inserted successfully and city added!");
+                })
+                .catch((err)=>{
+                  console.log(err);
+                })
+
+
+            }
+          }
+          else{
+
+            const newState = new States({
+              name: insertState,
+              cities : [{
+                name:insertCity,
+                photos:[{
+                  url: insertUrl,
+                  tags: insertTags,
+                  isActive: true
+                }]
+              }]
+            })
+
+            
+            newState.save()
+            .then(state => {
+                console.log(state);
+                console.log("Hoooooray! Single image inserted successfully, city and state added!");
+              })
+              .catch(err => {
+                console.log(err)
+              })
+            
+          }
+        })
+        .catch(err=>{
+          console.log(err);
+        })
+
+    }
+    else{
+      console.log("URL does not exist");
+    }
+
+      
+  }
+
+  fun();
+
+
+})
+
+
+
 // req.body --> city, state
 app.post('/admin/insert',(req,res)=>{
   var requestedCity=req.body.city;
