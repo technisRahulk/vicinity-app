@@ -239,6 +239,7 @@ app.get('/dashboard',auth,async(req,res)=>
 //login form
 app.get('/login',async(req,res)=>
 {
+  const data = await Admin.findOne({email : req.email})
     const token = req.cookies.token;
     //console.log(req.cookies.token)
     if(!token)
@@ -255,6 +256,7 @@ app.post('/admin/login',async (req,res)=>
       const admin=await Admin.findByCredentials(req.body.email,req.body.password)
       const token=await admin.generateAuthToken()
       res.cookie("token", token, { httpOnly: true })
+      console.log(admin)
       res.render('dashboard',{admin,token});
     }catch(e)
     {
