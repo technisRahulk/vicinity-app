@@ -25,12 +25,12 @@ function checkURL(url) {
 
 //calling ML API for a particular image and getting tags in response
 const search=(searchUrl,callback)=>{
-    const url='http://localhost:3000/?url='+searchUrl
+    //const url='http://localhost:3000/?url='+searchUrl
     if(!checkURL(searchUrl)){
         return callback("Please insert an URL of a valid image file.", undefined)
     }
-    // Link from deployed app
-    const url='' + searchUrl
+
+    const url='https://flask-dl-api.herokuapp.com/predict?url=' + searchUrl
     //console.log(url)
     request({url,json:true},(error,body)=>{
         // console.log(error);
@@ -67,7 +67,33 @@ const search=(searchUrl,callback)=>{
     })
 }
 
+//calculating similarity index between user photo tags and DB photo tags of the city mentioned by user
+//db_arr is and array of objects 
+const simIndex=((db_tags,user_arr)=>{
+    let db_arr=[]
+    for(var i=0;i<db_tags.length;i++){
+        db_arr.push(db_tags[i].name);
+        db_arr.push(db_tags[i].prob);
+    }
+    let myMap = new Map();
+    for(var i=0;i<db_arr.length;i+=2){
+        myMap.set(db_arr[i],parseFloat(db_arr[i+1]));
+    }
+
+    var ans = 0;
+
+    for(var i=0;i<user_arr.length;i+=2){
+        if(myMap.has(user_arr[i])){
+            var val1 = myMap.get(user_arr[i]);
+            var val2 = parseFloat(user_arr[i+1]);
+            ans += (2*Math.min(val1,val2));
+        }
+    }
+    return ans;
+})
+
 module.exports = {
     flickr,
-    search
+    search,
+    simIndex
 }
