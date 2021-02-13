@@ -255,7 +255,7 @@ app.post('/admin/login',async (req,res)=>
       const admin=await Admin.findByCredentials(req.body.email,req.body.password)
       const token=await admin.generateAuthToken()
       res.cookie("token", token, { httpOnly: true })
-      res.render('dashboard',{admin,token});
+      res.redirect('/dashboard');
     }catch(e)
     {
       res.redirect('/login?error=' + encodeURIComponent('Incorrect_Credentials! Please enter your details again.'))
