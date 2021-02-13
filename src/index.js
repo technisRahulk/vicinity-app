@@ -538,7 +538,8 @@ app.get('/signup',(req,res)=>
 //dashboard route
 app.get('/dashboard',auth,async(req,res)=>
 {
-  res.render('dashboard')
+  const admin=req.admin
+  res.render('dashboard',{admin})
 })
 
 //login form
@@ -562,7 +563,7 @@ app.post('/admin/login',async (req,res)=>
       const token=await admin.generateAuthToken()
       res.cookie("token", token, { httpOnly: true })
       console.log(admin)
-      res.render('dashboard',{admin,token});
+      res.redirect('/dashboard');
     }catch(e)
     {
       res.redirect('/login?error=' + encodeURIComponent('Incorrect_Credentials! Please enter your details again.'))
