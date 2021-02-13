@@ -794,7 +794,7 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
 
 
 app.get("*", (req, res) => {
-  res.status(404).send("Page Not Found!!!");
+  res.render('error')
 })
 
 
