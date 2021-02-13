@@ -12,6 +12,7 @@ const States = require('./models/states.js')
 const Admin=require('./models/admin')
 const auth=require('./middleware/auth')
 const cookieParser = require("cookie-parser");
+const multer = require('multer');
 
 //Express server setup
 const app = express();
@@ -489,6 +490,78 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
   });
 })
 
+app.post("/admin/filter", (req, res) => {
+  // req.body = {state, city}
+  const usercity = req.body.city.toLowerCase();
+  const userstate = req.body.state.toLowerCase();
+  console.log(usercity, userstate);
+
+  States.findOne({name : userstate})
+    .then(state => {
+      if(state){
+
+        var i;
+        for(i=0; i<state.cities.length; i++){
+          if(state.cities[i].name == usercity){
+            break;
+          }
+        }
+
+        photo_url = []
+        for(var j=0; j<state.cities[i].photos.length; j++){
+          photo_url.push(state.cities[i].photos[j].url)
+        }
+
+        res.render('delete', {usercity, userstate, photo_url});
+      }
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    })
+});
+
+app.post("/admin/delete", (req, res) => {
+  // req.body => state, city, url
+  const usercity = req.body.city.toLowerCase();
+  const userstate = req.body.state.toLowerCase();
+  const url = req.body.url;
+
+  States.findOne({name : userstate})
+    .then(state => {
+      if(state){
+        // console.log(state);
+        var i;
+        for(i=0; i<state.cities.length; i++){
+          if(state.cities[i].name == usercity){
+            break;
+          }
+        }
+
+        state.cities[i].photos = state.cities[i].photos.filter((photo) => {
+          return photo.url != url;
+        })
+
+        console.log(url, userstate, usercity)
+
+        state.save()
+          .then(() => {
+            console.log("Deleted successfully");
+            res.send("success");
+          })
+          .catch((err) => {
+            res.status(400).send(err);
+          })
+      }
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    })
+})
+
+app.get("/deleteform", (req, res) => {
+  const photo_url = [];
+  res.render('delete', {photo_url});
+})
 
 app.get("*", (req, res) => {
   res.status(404).send("Page Not Found!!!");
