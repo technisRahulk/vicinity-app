@@ -7,6 +7,9 @@
     <title>Document</title>
 </head>
 <body>
+    <% if(error) {%>
+        <h1> <%= error %> </h1>
+    <% } %>
     <form method="POST" action="/admin/login">
         <input type="text" placeholder="email" name="email">
         <input type="password" placeholder="password" name="password">

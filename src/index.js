@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 
 // configuration for environment variables
-require("dotenv").config({path:'./../config/.env'});
+require("dotenv").config({path:path.resolve(__dirname, '../config/.env')});
 
 //Port setup
 const port = process.env.PORT || 7000;
@@ -242,7 +242,7 @@ app.get('/login',async(req,res)=>
     //console.log(req.cookies.token)
     if(!token)
     {
-      return res.render('loginform')
+      return res.render('loginform', {error: req.query.error})
     }
     res.redirect('/dashboard');
 })
@@ -257,7 +257,8 @@ app.post('/admin/login',async (req,res)=>
       res.render('dashboard',{admin,token});
     }catch(e)
     {
-        res.status(400).send(e)
+      res.redirect('/login?error=' + encodeURIComponent('Incorrect_Credentials! Please enter your details again.'))
+      // res.status(400).send(e)
     }
 })
 
@@ -265,15 +266,17 @@ app.post('/admin/login',async (req,res)=>
 app.post('/admin/logout',auth,async(req,res)=>
 {
     try
-    {
+    { 
       res.clearCookie("token");
-      res.send({ success: true });
+      res.redirect('/login');
     }
     catch(e)
     {
       res.status(400).send('Unable to verify')
     }
 })
+
+
 const {Heap} = require('heap-js');
 
 const customPriorityComparator = (a,b) =>{
@@ -369,6 +372,10 @@ app.post('/searchbyurl',(req,response)=>{
         response.render('error', {err: error})
       })
   })
+})
+
+app.get("*", (req, res) => {
+
 })
 
 
