@@ -1,0 +1,33 @@
+/* Style the tab buttons */
+.tablink {
+    margin: 4rem auto;
+    /* background-color: #555; */
+    /* color: white; */
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    font-size: 17px;
+    width: 25%;
+}
+
+/* Change background color of buttons on hover */
+.tablink:hover {
+/* background-color: rgb(196, 193, 193); */
+    background-color: white;
+}
+
+/* Set default styles for tab content */
+.tabcontent {
+    background-size: cover;
+    text-align: center;
+    display: none;
+}
+
+.align-items-center{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
