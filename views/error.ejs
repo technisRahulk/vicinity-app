@@ -1,25 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Error</title>
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-        <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    </head>
-    <body>
-        <div class="page-wrap d-flex flex-row align-items-center">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-12 text-center">
-                        <span class="display-1 d-block">404</span>
-                        <div class="mb-4 lead">The page you are looking for was not found.</div>
-                        <a href="/" class="btn btn-link">Back to Home</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="/img/logo/logo.png" type="image/icon type">
+    <title>Error</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .bs-example{
+            margin: 20px;
+        }
+        .alert{
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="bs-example"> 
+    <div class="alert alert-warning alert-dismissible fade show">
+        <h4 class="alert-heading"><i class="fa fa-warning"></i> Warning!</h4>
+        <p><%= err %></p>
+        <hr>
+        <!-- <p class="mb-0">Once you have filled all the details, click on the 'Next' button to continue.</p> -->
+        <button type="button" class="close" data-dismiss="alert" onclick="goback()">&times;</button>
+    </div>
+
+    <script>
+        function goback(){
+            window.history.back()
+        }
+    </script>
+</div>
+</body>
 </html>

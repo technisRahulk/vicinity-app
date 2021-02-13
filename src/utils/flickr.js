@@ -92,8 +92,169 @@ const simIndex=((db_tags,user_arr)=>{
     return ans;
 })
 
+
+const searchDist=(fromCity,toCity,callback)=>{
+    //const url='http://localhost:3000/?url='+searchUrl
+    if(fromCity===undefined || toCity===undefined) return callback("undefined parameters",undefined);
+    const url = 'https://www.distance24.org/route.json?stops='+encodeURIComponent(fromCity)+'|'+encodeURIComponent(toCity)
+    // const url = 'http://www.distance24.org/route.json?stops=' + fromCity + '|' + toCity;
+    console.log(url)
+    //console.log(fromCity+" "+toCity)
+    request({url,json:true},(error,res)=>{
+        // console.log(res.body);
+        if(error){
+            callback("searchDist Error",undefined)
+        }
+        // if res.body is null or if res.body doesn't contain distances parameter or if distances.length is 0 then callback with error
+        else if(!res.body || !res.body.distances || res.body.distances.length===0){
+            callback('Bad Input',undefined)
+        }
+        else{
+            callback(undefined,res.body)
+        }
+    })
+}
+
+const reverseGeoCode=(lat,long,callback)=>{
+    const url = 'http://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+long+'&format=jsonv2';
+    // const url = 'https://www.distance24.org/route.json?stops='+encodeURIComponent(fromCity)+'|'+encodeURIComponent(toCity)
+    // console.log(url)
+    request({url,json:true},(error,res)=>{
+        // console.log(res.body);
+        if(error){
+            callback("Reverse geocode API error",undefined)
+        }
+        else if(res.body.error=="Unable to geocode"){
+            callback('Bad Lat Long',undefined)
+        }
+        else{
+            callback(undefined,res.body)
+        }
+    })
+}
+
+const reverseGeoCode_bigdatacloud_api = (lat,long,callback)=>{
+    // const url = 'http://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+long+'&format=jsonv2';
+    // const url = 'https://www.distance24.org/route.json?stops='+encodeURIComponent(fromCity)+'|'+encodeURIComponent(toCity)
+    // console.log(url)
+    const url = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+long+'&localityLanguage=en';
+    request({url,json:true},(error,res)=>{
+        // console.log(res.body);
+        if(error){
+            callback("Reverse geocode API error",undefined)
+        }
+        else if(res.body.status==401){
+            callback('Bad Lat Long',undefined)
+        }
+        else{
+            callback(undefined,res.body)
+        }
+    })
+}
+
+const cityFromPinCode=(pinCode,callback)=>{
+    const url = 'https://api.postalpincode.in/pincode/'+pinCode;
+    // const url = 'https://www.distance24.org/route.json?stops='+encodeURIComponent(fromCity)+'|'+encodeURIComponent(toCity)
+    // console.log(url)
+    request({url,json:true},(error,res)=>{
+        // console.log(res.body);
+        if(error){
+            callback("Reverse geocode API error",undefined)
+        }
+        else if(res.body.error=="Unable to geocode"){
+            callback('Bad Lat Long',undefined)
+        }
+        else{
+            callback(undefined,res.body)
+        }
+    })
+}
+
+const do_reverseGeoCode = function(lat,long){
+    return new Promise((resolve,reject)=>{
+        reverseGeoCode(lat,long,(err,body)=>{
+            if(err) reject(err);
+            resolve(body.address);
+        });
+    })
+}
+
+
+const do_reverseGeoCode_bigdatacloud_api = function(lat,long){
+    return new Promise((resolve,reject)=>{
+        reverseGeoCode_bigdatacloud_api(lat,long,(err,body)=>{
+            if(err) reject(err);
+            resolve(body);
+        });
+    })
+}
+
+const do_cityFromPinCode = function(input){
+    return new Promise((resolve,reject)=>{
+        cityFromPinCode(input,(err,body)=>{
+            if(err) reject(err);
+            console.log("IIIIIIIIIIIIIIIIII ",body[0].PostOffice);
+
+            if(body[0].PostOffice===undefined || body[0].PostOffice===null){
+                console.log("here");
+                return resolve(undefined);
+            }
+            city_ = body[0].PostOffice[0];
+            resolve(city_);
+        });
+    })
+}
+
+const city = async function(lat,long){
+    //Be careful while editing this function
+
+    var pinCode = 0;
+
+    var input = await do_reverseGeoCode(lat,long);
+
+    console.log("input: ",input)
+    var input_else = input;
+    if(input.postcode===undefined){
+        var v = await do_reverseGeoCode_bigdatacloud_api(lat,long);
+        if(input.state===undefined) input.state = v.principalSubdivision;
+        var obj = {"District":input.state_district,"State":input.state,"County":input.county,"town":input.town};
+        if(v.city) obj={...obj,"city":v.city};
+        if(v.locality) obj={...obj,"locality":v.locality};
+        return obj;
+    } else {
+        input=input.postcode;
+    }
+    console.log("input: ",input)
+
+    var next_input = await do_cityFromPinCode(input);
+    
+    var tempObj = {"District":input_else.state_district,"State":input_else.state,"County":input_else.county,"town":input_else.town};
+    var v = await do_reverseGeoCode_bigdatacloud_api(lat,long);
+    if(tempObj.State===undefined)
+    {
+        tempObj.State=v.principalSubdivision;
+    }
+    // var obj = {"District":input.state_district,"State":input.state,"County":input.county,"town":input.town};
+    if(v.city) tempObj={...tempObj,"city":v.city};
+    if(v.locality) tempObj={...tempObj,"locality":v.locality};
+
+    if(next_input){
+        if(v.city) next_input={...next_input,"city":v.city};
+        if(v.locality) next_input={...next_input,"locality":v.locality};
+    }
+
+    console.log("next_input:   ",next_input);
+    // console.log("IIIIIIIIIII: ",next_input,input.state);
+    return (next_input===undefined?tempObj:next_input);
+
+}
+
+
+
 module.exports = {
     flickr,
     search,
-    simIndex
+    simIndex,
+    searchDist,
+    city
 }

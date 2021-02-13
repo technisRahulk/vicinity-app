@@ -9,7 +9,7 @@ const ejs = require('ejs')
 const path = require('path')
 const request=require('request');
 const urlExist = require('url-exist');
-const {flickr, search, simIndex}=require('./utils/flickr')
+const {flickr, city, search, simIndex, searchDist}=require('./utils/flickr')
 const States = require('./models/states.js')
 const trackData = require("./utils/finalAlgo");
 const Admin=require('./models/admin')
@@ -57,162 +57,6 @@ app.get('/', (req, response) => {
 
 //insert photos array (url only) for a given city (state is hardcoded as of now)
 // incase the city doesn't exist, a new city object will be created
-
-
-// app.get('/insert/:city',(req,res)=>{
-//   var city=req.params.city;
-//   //city, state, imageURL,
-//   //console.log(city)
-//   flickr(city,(error,body)=>{
-//     if(error){
-//       console.log("there is error")
-//       return res.send({error})
-//     }
-//     console.log(body)
-//     var _s = body.photos.photo;
-//     var photos = []
-//     for(var z = 0 ; z < body.photos.photo.length ; z++){
-//         var CurrentPhotoUrl = 'https://farm'+_s[z]['farm']+'.staticflickr.com/'+_s[z]['server']+'/'+_s[z]['id']+'_'+_s[z]['secret']+'_n.jpg'
-//         //console.log(CurrentPhotoUrl); 
-//         var photo = {
-//           url : CurrentPhotoUrl,
-//           tags : [],
-//           placename : ""
-//         }
-//         photos.push(photo)
-//     }
-//     var currentCity = {
-//       name : city,
-//       photos : photos
-//     }
-//     //console.log(currentCity.name)
-//     States.findOne({name : "arunachal pradesh"})
-//       .then(state => {
-//         if(state){
-//           state.cities.push(currentCity)
-//           state.save()
-//           .then(state => {
-//             console.log("saved successfully")
-//           })
-//           .catch(err => {
-//             console.log(err)
-//           })
-//         }
-//         else{
-//           var cities = []
-//           cities.push(currentCity)
-//           const newState = new States({
-//             name: "assam",
-//             cities : cities
-//           })
-
-//           newState.save()
-//             .then(state => {
-//               console.log("saved successfully")
-//             })
-//             .catch(err => {
-//               console.log(err)
-//             })
-//         }
-//       })
-//   })
-// })
-
-
-
-// // route for updating tags in city
-// app.get('/update/:stateInput', (req, res) => {
-//   var reqState=req.params.stateInput;
-//   var cnt = 0;
-  
-//   States.findOne({name:reqState})
-//   .then((state)=>{
-//     var chunk = 6;
-    
-//     const iterate = function(city_i){
-//       console.log(state.cities[city_i].name);
-//       cnt = 0;
-//       var city = state.cities.find(c => c.name === state.cities[city_i].name)
-//       var lim = city.photos.length;
-//       const solve = function(lower_bound,upper_bound){
-//         if((upper_bound-lower_bound+1)==0){
-//           city_i++;
-//           if(city_i<state.cities.length) return iterate(city_i);
-          
-//         }
-//         for(let i=lower_bound;i<=Math.min(upper_bound,lim-1);i++){
-//           const start = async function(){
-//             const exists = await urlExist(city.photos[i].url);
-//             if(exists){
-//               search(city.photos[i].url, (err, res) => {
-//                 console.log(i);
-//                 if(err) return console.log(err);
-//                 var body = res
-//                 var val = [];
-//                 for(let j=0; j<body.length; j+=2){
-//                   var key_val = {
-//                     name : body[j],
-//                     prob : body[j+1]
-//                   }
-//                   val.push(key_val)
-//                 }
-//                 city.photos[i].tags = val;
-//                 city.photos[i].isActive = true;
-//                 cnt++;
-//                 if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
-//                   state.save()
-//                   .then(()=>{
-//                       console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
-//                     })
-//                     .catch((err)=>{
-//                       console.log(err);
-//                     })
-//                     if(upper_bound+1<lim){
-//                       cnt=0;
-//                       return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
-//                     }
-//                     else{
-//                       if(city_i+1<state.cities.length){
-//                         return iterate(city_i+1);
-//                       }
-//                     }
-//                   }
-//               })
-//             }
-//             else{
-//               cnt++;
-//               if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
-//                 state.save()
-//                 .then(()=>{
-//                   console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
-//                 })
-//                 .catch((err)=>{
-//                   console.log(err);
-//                 })
-//                 if(upper_bound+1<lim){
-//                   cnt=0;
-//                   return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
-//                 }
-//                   else{
-//                     if(city_i+1<state.cities.length){
-//                       return iterate(city_i+1);
-//                     }
-//                   }
-//               }
-//             }
-//           }
-//           start();
-//         }
-//       }
-      
-//       solve(0,Math.min(chunk,lim-1));
-      
-//     }
-//     iterate(0);
-//   })
-
-
-// })
 
 
 app.post('/admin/singleInsert',(req,res)=>{
@@ -407,15 +251,9 @@ app.post('/admin/insert',(req,res)=>{
 
         chunk = 6;
 
-    
         var city = state.cities.find(c => c.name === requestedCity)
         var lim = city.photos.length;
         
-        
-        
-
-
-
         var cnt = 0;
 
         const solve = function(lower_bound,upper_bound){
@@ -485,24 +323,8 @@ app.post('/admin/insert',(req,res)=>{
         }
 
         solve(0,Math.min(chunk,lim-1));
-
-
-
       })
   })
-
-
-
-  // var cnt = 0;
-  
-  // States.findOne({name:requestedState})
-  // .then((state)=>{
-    
-
-  // })
-
-
-
 })
 
 
@@ -662,7 +484,8 @@ app.post('/searchbyurl',(req,response)=>{
             console.log(curArr[i].score)
             var obj = {
               city : cities[city_index].name,
-              url : cities[city_index].photos[photo_index].url
+              url : cities[city_index].photos[photo_index].url,
+              state: reqState
             }
             console.log(obj)
             res.push(obj)
@@ -770,13 +593,14 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
                 var photo_index = curArr[i].photo_id
                 var obj = {
                   city : cities[city_index].name,
-                  url : cities[city_index].photos[photo_index].url
+                  url : cities[city_index].photos[photo_index].url,
+                  state: reqState
                 }
                 console.log(obj)
                 res.push(obj)
               }
               var finalAns=[]
-              response.render('index1', {
+              response.render('index', {
                 finalAns,res,url
               })
             } else {
@@ -799,6 +623,78 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
   });
 })
 
+app.post("/admin/filter", (req, res) => {
+  // req.body = {state, city}
+  const usercity = req.body.city.toLowerCase();
+  const userstate = req.body.state.toLowerCase();
+  console.log(usercity, userstate);
+
+  States.findOne({name : userstate})
+    .then(state => {
+      if(state){
+
+        var i;
+        for(i=0; i<state.cities.length; i++){
+          if(state.cities[i].name == usercity){
+            break;
+          }
+        }
+
+        photo_url = []
+        for(var j=0; j<state.cities[i].photos.length; j++){
+          photo_url.push(state.cities[i].photos[j].url)
+        }
+
+        res.render('delete', {usercity, userstate, photo_url});
+      }
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    })
+});
+
+app.post("/admin/delete", (req, res) => {
+  // req.body => state, city, url
+  const usercity = req.body.city.toLowerCase();
+  const userstate = req.body.state.toLowerCase();
+  const url = req.body.url;
+
+  States.findOne({name : userstate})
+    .then(state => {
+      if(state){
+        // console.log(state);
+        var i;
+        for(i=0; i<state.cities.length; i++){
+          if(state.cities[i].name == usercity){
+            break;
+          }
+        }
+
+        state.cities[i].photos = state.cities[i].photos.filter((photo) => {
+          return photo.url != url;
+        })
+
+        console.log(url, userstate, usercity)
+
+        state.save()
+          .then(() => {
+            console.log("Deleted successfully");
+            res.send("success");
+          })
+          .catch((err) => {
+            res.status(400).send(err);
+          })
+      }
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    })
+})
+
+app.get("/deleteform", (req, res) => {
+  const photo_url = [];
+  res.render('delete', {photo_url});
+})
 
 
 // The main route
@@ -1086,28 +982,7 @@ app.post("/searchGlobal", upload.single('file1'), async (req, response) => {
     var res=[]
     response.render('index',{finalAns,res,url, state_});
   }
-
-  ////USE BELOW FOR DEV/TEST PUROPSE ONLY////
-  //https://picsum.photos/200/300
-  //url = "https://picsum.photos/200/300";
-  // url = "https://source.unsplash.com/collection/483251";
-
-  // const reqUrlFun = (url)=>{
-  //   return new Promise((resolve,reject)=>{
-  //     request({url,json:true},(err,body)=>{
-  //         if(err) reject(err);
-  //         // console.log(body);
-  //         resolve(body.request.uri.href);
-  //     })
-  //   })
-  // }
   
-  // var reqUrl = await reqUrlFun(url);
-  
-  //console.log("reqUrl***^^^***: ",url);
-  
-  //////////////////////////////////////
-
   trackData(state_.toLowerCase(), district_, url, cb);
 
 })
@@ -1160,11 +1035,26 @@ app.post("/send", (req, res) => {
   });
 });
 
-
+app.get("/viewDetails/:city/:state", async (req, res) => {
+  console.log(req.params.city);
+  console.log(req.query.user_state);
+  try {
+    await searchDist(req.params.city, 'assam', (err, body) => {
+      if(err){
+        return res.render('error', {err})
+      }
+      // body = JSON.parse(body)
+      console.log(body.stops[0].wikipedia);
+      res.render('viewDetails', {body, city: req.params.city, state: req.params.state, url: req.query.url});
+    })
+  } catch(e) {
+    res.render('error', {err: e})
+  }
+})
 
 
 app.get("*", (req, res) => {
-  res.render('error')
+  res.render('404Page');
 })
 
 
