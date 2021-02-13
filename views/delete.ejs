@@ -9,6 +9,13 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        img {
+            border-style: ridge;
+            border-width: 0.7rem;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="container" style="margin: 4rem auto;">
@@ -56,11 +63,11 @@
                 </a>
             </div>
             
-            <form method="POST" action="/admin/delete" id="delete-img">
+            <form method="POST" action="/admin/delete" id="delete-img" style="text-align: center;">
                 <input type="hidden" id="state" name="state" value="<%= userstate %>">
                 <input type="hidden" id="city" name="city" value="<%= usercity %>">
                 <input type="hidden" id="url" name="url" value="">
-                <button type="submit">Delete</button>
+                <button class="btn btn-danger" type="submit" style="margin-top: 3rem;">Delete</button>
             </form>
         </div>
     <% } %>

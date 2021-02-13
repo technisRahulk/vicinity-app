@@ -623,7 +623,7 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
   });
 })
 
-app.post("/admin/filter", (req, res) => {
+app.post("/admin/filter", auth, (req, res) => {
   // req.body = {state, city}
   const usercity = req.body.city.toLowerCase();
   const userstate = req.body.state.toLowerCase();
@@ -653,7 +653,7 @@ app.post("/admin/filter", (req, res) => {
     })
 });
 
-app.post("/admin/delete", (req, res) => {
+app.post("/admin/delete", auth, (req, res) => {
   // req.body => state, city, url
   const usercity = req.body.city.toLowerCase();
   const userstate = req.body.state.toLowerCase();
@@ -691,7 +691,7 @@ app.post("/admin/delete", (req, res) => {
     })
 })
 
-app.get("/deleteform", (req, res) => {
+app.get("/deleteform", auth, (req, res) => {
   const photo_url = [];
   res.render('delete', {photo_url});
 })
@@ -982,7 +982,7 @@ app.post("/searchGlobal", upload.single('file1'), async (req, response) => {
     var res=[]
     response.render('index',{finalAns,res,url, state_});
   }
-  
+
   trackData(state_.toLowerCase(), district_, url, cb);
 
 })
