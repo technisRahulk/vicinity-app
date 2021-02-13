@@ -29,13 +29,8 @@ const search=(searchUrl,callback)=>{
     if(!checkURL(searchUrl)){
         return callback("Please insert an URL of a valid image file.", undefined)
     }
-<<<<<<< HEAD
-    // Link from deployed app
-    //const url='' + searchUrl
-=======
 
     const url='https://flask-dl-api.herokuapp.com/predict?url=' + searchUrl
->>>>>>> c7ba87d609240c5047d312dd78d22b3e44cc6451
     //console.log(url)
     request({url,json:true},(error,body)=>{
         // console.log(error);

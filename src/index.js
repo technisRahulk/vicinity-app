@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 
 // configuration for environment variables
-require("dotenv").config({path:'./../.env'});
+require("dotenv").config({path:'./../config/.env'});
 
 //Port setup
 const port = process.env.PORT || 7000;
