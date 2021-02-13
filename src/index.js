@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser')
 const multer = require('multer')
+var imgur = require('imgur')
 const fs = require('fs')
 const ejs = require('ejs')
 const path = require('path')
@@ -645,7 +646,7 @@ app.post('/searchbyimage', upload.single('file'), (req, response) => {
                 res.push(obj)
               }
               var finalAns=[]
-              response.render('index', {
+              response.render('index1', {
                 finalAns,res,url
               })
             } else {
