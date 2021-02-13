@@ -107,7 +107,6 @@ app.get('/insert/:city',(req,res)=>{
 })
 
 
-
 // route for updating tags in city
 app.get('/update/:stateInput', (req, res) => {
   var reqState=req.params.stateInput;
@@ -374,8 +373,125 @@ app.post('/searchbyurl',(req,response)=>{
   })
 })
 
-app.get("*", (req, res) => {
 
+// Set up multer for storing images
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    var newDestination = __dirname + `./../public/uploads/`
+    cb(null, newDestination)
+  },
+  filename: function (req, file, cb) {
+    var filename = file.originalname;
+    cb(null, filename);
+  }
+}); 
+
+var upload = multer({
+  storage : storage,
+  fileFilter : function(req,file,cb){
+    if(!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      //cb(new Error('Please upload an Image file (.jpg, .jpeg, .png only)'));
+      return cb('error: Images only!')
+    }
+    cb(undefined, true);
+  }
+});
+
+
+
+// route for user to upload image and enter state name
+app.post('/searchbyimage', upload.single('file'), (req, response) => {
+  console.log("searchbyimage route invoked")
+  console.log("User Cooridinates: ",req.body.lat,req.body.long)
+  var reqState=req.body.state.toLowerCase();
+  console.log(reqState)
+  var user_arr=[]
+  var url;
+  const tempPath = req.file.originalname;
+  var uploadPath = __dirname + `./../public/uploads/` + tempPath
+  imgur.uploadFile(uploadPath)
+    .then(function (json) {
+        console.log(json.data.link);
+        url=json.data.link;
+        search(json.data.link, (err, res) => {
+          if(err) return console.log(err);
+          user_arr=res
+          console.log(user_arr);
+          States.findOne({name : reqState})
+          .then(state => {
+            if(state){
+              var cities = state.cities
+              var max = 0
+              var city_id, photo_id
+              const minHeap = new Heap(customPriorityComparator);
+              let myMap = new Map();
+              var curArr = [];
+              for(var i=0; i<cities.length; i++){
+                var city = cities[i]
+                for(var j=0;j<city.photos.length;j++){
+                  if(city.photos[j].isActive){
+                    if(curArr.length < 6){
+                      curArr.push({city_id:i, photo_id:j, score:simIndex(city.photos[j].tags,user_arr)});
+                      if(curArr.length==6){
+                        minHeap.init(curArr);
+                        for(var k=0;k<curArr.length;k++){
+                          myMap.set('city_id='+curArr[k].city_id+'photo_id='+curArr[k].photo_id+'score='+curArr[k].score, k);
+                        }
+                      }
+                    } else {
+                      var sim = simIndex(city.photos[j].tags,user_arr);
+                      var score = sim;
+                      var obj = minHeap.top();
+                      if(myMap.has('city_id='+i+'photo_id='+j+'score='+sim)) continue;
+                      if(score<obj[0].score) continue;
+                      var id = myMap.get('city_id='+obj[0].city_id+'photo_id='+obj[0].photo_id+'score='+obj[0].score)
+                      myMap.delete('city_id='+obj[0].city_id+'photo_id='+obj[0].photo_id+'score='+obj[0].score)
+                      curArr[id] = {city_id:i, photo_id:j, score:sim};
+                      minHeap.pop();
+                      minHeap.push({city_id:i, photo_id:j, score:sim});
+                      myMap.set('city_id='+i+'photo_id='+j+'score='+score,id);
+                    }
+                  }
+                }
+              }
+              let res=[]
+              for(var i=0;i<curArr.length;i++){
+                var city_index=curArr[i].city_id
+                var photo_index = curArr[i].photo_id
+                var obj = {
+                  city : cities[city_index].name,
+                  url : cities[city_index].photos[photo_index].url
+                }
+                console.log(obj)
+                res.push(obj)
+              }
+              var finalAns=[]
+              response.render('index', {
+                finalAns,res,url
+              })
+            } else {
+              response.render('error', {err: "The State doesn't has ample amount of scenic places"})
+            }
+          })
+          .then(() => {
+            fs.unlinkSync(uploadPath)
+            console.log("Deleted file: " + uploadPath)
+          })
+          .catch(error => {
+            console.log(error)
+            response.render('error', {err: error})
+          })
+        })
+    })
+    .catch(function (err) {
+      console.error(err);
+      response.render('error', {err})
+  });
+})
+
+
+app.get("*", (req, res) => {
+  res.status(404).send("Page Not Found!!!");
 })
 
 
