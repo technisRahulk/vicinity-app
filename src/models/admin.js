@@ -23,9 +23,12 @@ const adminSchema=new mongoose.Schema({
         trim:true,
         required:true,
         minlength:5
+    },
+    name: {
+        type: String,
+        required: true
     }
-    }
-)
+})
 
 adminSchema.methods.generateAuthToken=async function()
 {
