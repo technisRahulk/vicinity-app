@@ -6,6 +6,8 @@ const fs = require('fs')
 const ejs = require('ejs')
 const path = require('path')
 const request=require('request')
+const urlExist = require("url-exist");
+const {flickr, search}=require('./utils/flickr')
 const States = require('./models/states.js')
 
 //Express server setup
