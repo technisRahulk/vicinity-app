@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const DistStates = require('../models/distStates.js')
 const States = require('../models/states.js')
 const {city,simIndex,search,searchDist}=require('./flickr')
+const path = require('path')
 
 const {Heap} = require('heap-js');
 
@@ -9,7 +10,7 @@ const customPriorityComparator = (a,b) =>{
     return a.score-b.score;
 }
 
-require("dotenv").config({ path: '../.env' });
+require("dotenv").config({path:path.resolve(__dirname, '../../config/.env')});
 
 mongoose
   .connect(process.env.MONGODB_URL, {
