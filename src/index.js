@@ -51,10 +51,302 @@ app.get('/', (req, response) => {
 
 //insert photos array (url only) for a given city (state is hardcoded as of now)
 // incase the city doesn't exist, a new city object will be created
-app.get('/insert/:city',(req,res)=>{
-  var city=req.params.city;
+
+
+// app.get('/insert/:city',(req,res)=>{
+//   var city=req.params.city;
+//   //city, state, imageURL,
+//   //console.log(city)
+//   flickr(city,(error,body)=>{
+//     if(error){
+//       console.log("there is error")
+//       return res.send({error})
+//     }
+//     console.log(body)
+//     var _s = body.photos.photo;
+//     var photos = []
+//     for(var z = 0 ; z < body.photos.photo.length ; z++){
+//         var CurrentPhotoUrl = 'https://farm'+_s[z]['farm']+'.staticflickr.com/'+_s[z]['server']+'/'+_s[z]['id']+'_'+_s[z]['secret']+'_n.jpg'
+//         //console.log(CurrentPhotoUrl); 
+//         var photo = {
+//           url : CurrentPhotoUrl,
+//           tags : [],
+//           placename : ""
+//         }
+//         photos.push(photo)
+//     }
+//     var currentCity = {
+//       name : city,
+//       photos : photos
+//     }
+//     //console.log(currentCity.name)
+//     States.findOne({name : "arunachal pradesh"})
+//       .then(state => {
+//         if(state){
+//           state.cities.push(currentCity)
+//           state.save()
+//           .then(state => {
+//             console.log("saved successfully")
+//           })
+//           .catch(err => {
+//             console.log(err)
+//           })
+//         }
+//         else{
+//           var cities = []
+//           cities.push(currentCity)
+//           const newState = new States({
+//             name: "assam",
+//             cities : cities
+//           })
+
+//           newState.save()
+//             .then(state => {
+//               console.log("saved successfully")
+//             })
+//             .catch(err => {
+//               console.log(err)
+//             })
+//         }
+//       })
+//   })
+// })
+
+
+
+// // route for updating tags in city
+// app.get('/update/:stateInput', (req, res) => {
+//   var reqState=req.params.stateInput;
+//   var cnt = 0;
+  
+//   States.findOne({name:reqState})
+//   .then((state)=>{
+//     var chunk = 6;
+    
+//     const iterate = function(city_i){
+//       console.log(state.cities[city_i].name);
+//       cnt = 0;
+//       var city = state.cities.find(c => c.name === state.cities[city_i].name)
+//       var lim = city.photos.length;
+//       const solve = function(lower_bound,upper_bound){
+//         if((upper_bound-lower_bound+1)==0){
+//           city_i++;
+//           if(city_i<state.cities.length) return iterate(city_i);
+          
+//         }
+//         for(let i=lower_bound;i<=Math.min(upper_bound,lim-1);i++){
+//           const start = async function(){
+//             const exists = await urlExist(city.photos[i].url);
+//             if(exists){
+//               search(city.photos[i].url, (err, res) => {
+//                 console.log(i);
+//                 if(err) return console.log(err);
+//                 var body = res
+//                 var val = [];
+//                 for(let j=0; j<body.length; j+=2){
+//                   var key_val = {
+//                     name : body[j],
+//                     prob : body[j+1]
+//                   }
+//                   val.push(key_val)
+//                 }
+//                 city.photos[i].tags = val;
+//                 city.photos[i].isActive = true;
+//                 cnt++;
+//                 if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
+//                   state.save()
+//                   .then(()=>{
+//                       console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
+//                     })
+//                     .catch((err)=>{
+//                       console.log(err);
+//                     })
+//                     if(upper_bound+1<lim){
+//                       cnt=0;
+//                       return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
+//                     }
+//                     else{
+//                       if(city_i+1<state.cities.length){
+//                         return iterate(city_i+1);
+//                       }
+//                     }
+//                   }
+//               })
+//             }
+//             else{
+//               cnt++;
+//               if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
+//                 state.save()
+//                 .then(()=>{
+//                   console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
+//                 })
+//                 .catch((err)=>{
+//                   console.log(err);
+//                 })
+//                 if(upper_bound+1<lim){
+//                   cnt=0;
+//                   return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
+//                 }
+//                   else{
+//                     if(city_i+1<state.cities.length){
+//                       return iterate(city_i+1);
+//                     }
+//                   }
+//               }
+//             }
+//           }
+//           start();
+//         }
+//       }
+      
+//       solve(0,Math.min(chunk,lim-1));
+      
+//     }
+//     iterate(0);
+//   })
+
+
+// })
+
+
+app.post('/admin/singleInsert',(req,res)=>{
+  var insertUrl = req.body.url;
+  var insertCity = req.body.city;
+  var insertState = req.body.state;
+
+  console.log(insertUrl);
+
+
+  const fun = async function(){
+
+    const exists = await urlExist(insertUrl);
+
+    if(exists){
+      const doSearchFunc = (url)=>{
+        return new Promise((resolve,reject)=>{
+          search(url,(err,body)=>{
+            if(err) reject(err);
+            resolve(body);
+          })
+        })
+      }
+  
+      var insertTags = await doSearchFunc(insertUrl);
+
+      // console.log(insertTags);
+      var v =[];
+      for(var j=0;j<insertTags.length;j+=2){
+        v.push({
+          name:insertTags[j],
+          prob:insertTags[j+1]
+        })
+      }
+      insertTags=v;
+      // console.log(insertTags);
+      
+      States.findOne({name:insertState})
+      .then((state)=>{
+          if(state){
+            var city = state.cities.find(c => c.name === insertCity);
+            if(city){
+              city.photos.push({
+                url: insertUrl,
+                tags: insertTags,
+                isActive: true
+              })
+
+              state.save()
+                .then(()=>{
+                  console.log("Hoooooray! Single image insert successful!");
+                })
+                .catch((err)=>{
+                  console.log(err);
+                })
+            }
+            else{
+              state.cities.push({
+                name:insertCity,
+                photos:[{
+                  url: insertUrl,
+                  tags: insertTags,
+                  isActive: true
+                }]
+              })
+
+              state.save()
+                .then(()=>{
+                  console.log("Hoooooray! Single image inserted successfully and city added!");
+                })
+                .catch((err)=>{
+                  console.log(err);
+                })
+
+
+            }
+          }
+          else{
+
+            const newState = new States({
+              name: insertState,
+              cities : [{
+                name:insertCity,
+                photos:[{
+                  url: insertUrl,
+                  tags: insertTags,
+                  isActive: true
+                }]
+              }]
+            })
+
+            
+            newState.save()
+            .then(state => {
+                console.log(state);
+                console.log("Hoooooray! Single image inserted successfully, city and state added!");
+              })
+              .catch(err => {
+                console.log(err)
+              })
+            
+          }
+        })
+        .catch(err=>{
+          console.log(err);
+        })
+
+    }
+    else{
+      console.log("URL does not exist");
+    }
+
+      
+  }
+
+  fun();
+
+
+})
+
+
+
+// req.body --> city, state
+app.post('/admin/insert',(req,res)=>{
+  var requestedCity=req.body.city;
+  var requestedState=req.body.state;
+  //city, state, imageURL,
   //console.log(city)
-  flickr(city,(error,body)=>{
+
+
+  ///////////////////////////////////////////////////////////////////////
+  /********      SUB-ROUTINE FOR CITY UPDATE BELOW      ************** */
+  
+  
+
+
+  ///////////////////////////////////////////////////////////////////////
+
+
+  flickr(requestedCity,(error,body)=>{
     if(error){
       console.log("there is error")
       return res.send({error})
@@ -73,11 +365,11 @@ app.get('/insert/:city',(req,res)=>{
         photos.push(photo)
     }
     var currentCity = {
-      name : city,
+      name : requestedCity,
       photos : photos
     }
     //console.log(currentCity.name)
-    States.findOne({name : "arunachal pradesh"})
+    States.findOne({name :requestedState})
       .then(state => {
         if(state){
           state.cities.push(currentCity)
@@ -88,7 +380,8 @@ app.get('/insert/:city',(req,res)=>{
           .catch(err => {
             console.log(err)
           })
-        }else{
+        }
+        else{
           var cities = []
           cities.push(currentCity)
           const newState = new States({
@@ -104,74 +397,65 @@ app.get('/insert/:city',(req,res)=>{
               console.log(err)
             })
         }
-      })
-  })
-})
 
 
-// route for updating tags in city
-app.get('/update/:stateInput', (req, res) => {
-  var reqState=req.params.stateInput;
-  var cnt = 0;
+        chunk = 6;
 
-  States.findOne({name:reqState})
-  .then((state)=>{
-    var chunk = 6;
     
-    const iterate = function(city_i){
-      console.log(state.cities[city_i].name);
-      cnt = 0;
-      var city = state.cities.find(c => c.name === state.cities[city_i].name)
-      var lim = city.photos.length;
-      const solve = function(lower_bound,upper_bound){
-        if((upper_bound-lower_bound+1)==0){
-          city_i++;
-          if(city_i<state.cities.length) return iterate(city_i);
+        var city = state.cities.find(c => c.name === requestedCity)
+        var lim = city.photos.length;
+        
+        
+        
 
-        }
-        for(let i=lower_bound;i<=Math.min(upper_bound,lim-1);i++){
-          const start = async function(){
-            const exists = await urlExist(city.photos[i].url);
-            if(exists){
-              search(city.photos[i].url, (err, res) => {
-                console.log(i);
-                if(err) return console.log(err);
-                var body = res
-                var val = [];
-                for(let j=0; j<body.length; j+=2){
-                  var key_val = {
-                    name : body[j],
-                    prob : body[j+1]
+
+
+        var cnt = 0;
+
+        const solve = function(lower_bound,upper_bound){
+          for(let i=lower_bound;i<=Math.min(upper_bound,lim-1);i++){
+            const start = async function(){
+              const exists = await urlExist(city.photos[i].url);
+              if(exists){
+                search(city.photos[i].url, (err, res) => {
+                  console.log(i);
+                  if(err) return console.log(err);
+                  var body = res
+                  var val = [];
+                  for(let j=0; j<body.length; j+=2){
+                    var key_val = {
+                      name : body[j],
+                      prob : body[j+1]
+                    }
+                    val.push(key_val)
                   }
-                  val.push(key_val)
-                }
-                city.photos[i].tags = val;
-                city.photos[i].isActive = true;
+                  city.photos[i].tags = val;
+                  city.photos[i].isActive = true;
+                  cnt++;
+                  if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
+                    state.save()
+                    .then(()=>{
+                        console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
+                      })
+                      .catch((err)=>{
+                        console.log(err);
+                      })
+                      if(upper_bound+1<lim){
+                        cnt=0;
+                        return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
+                      }
+                      // else{
+                      //   if(city_i+1<state.cities.length){
+                      //     return iterate(city_i+1);
+                      //   }
+                      // }
+                    }
+                })
+              }
+              else{
                 cnt++;
                 if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
                   state.save()
-                    .then(()=>{
-                      console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
-                    })
-                    .catch((err)=>{
-                      console.log(err);
-                    })
-                    if(upper_bound+1<lim){
-                      cnt=0;
-                      return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
-                    }
-                    else{
-                      if(city_i+1<state.cities.length){
-                        return iterate(city_i+1);
-                      }
-                    }
-                }
-              })
-            }
-            else{
-              cnt++;
-              if(cnt==(Math.min(upper_bound,lim-1)-lower_bound+1)){
-                state.save()
                   .then(()=>{
                     console.log("Tags saved successfully! "+lower_bound+" "+Math.min(upper_bound,lim-1));
                   })
@@ -182,24 +466,39 @@ app.get('/update/:stateInput', (req, res) => {
                     cnt=0;
                     return solve(upper_bound+1,Math.min(upper_bound+chunk,lim-1));
                   }
-                  else{
-                    if(city_i+1<state.cities.length){
-                      return iterate(city_i+1);
-                    }
-                  }
+                    // else{
+                    //   if(city_i+1<state.cities.length){
+                    //     return iterate(city_i+1);
+                    //   }
+                    // }
+                }
               }
             }
+            start();
           }
-          start();
         }
-      }
-      
-      solve(0,Math.min(chunk,lim-1));
 
-    }
-    iterate(0);
+        solve(0,Math.min(chunk,lim-1));
+
+
+
+      })
   })
+
+
+
+  // var cnt = 0;
+  
+  // States.findOne({name:requestedState})
+  // .then((state)=>{
+    
+
+  // })
+
+
+
 })
+
 
 //sign-up route
 app.post('/admin/signup',async (req,res)=> //sign up
