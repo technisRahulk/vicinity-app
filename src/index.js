@@ -981,28 +981,7 @@ app.post("/searchGlobal", upload.single('file1'), async (req, response) => {
     var res=[]
     response.render('index',{finalAns,res,url, state_});
   }
-
-  ////USE BELOW FOR DEV/TEST PUROPSE ONLY////
-  //https://picsum.photos/200/300
-  //url = "https://picsum.photos/200/300";
-  // url = "https://source.unsplash.com/collection/483251";
-
-  // const reqUrlFun = (url)=>{
-  //   return new Promise((resolve,reject)=>{
-  //     request({url,json:true},(err,body)=>{
-  //         if(err) reject(err);
-  //         // console.log(body);
-  //         resolve(body.request.uri.href);
-  //     })
-  //   })
-  // }
   
-  // var reqUrl = await reqUrlFun(url);
-  
-  //console.log("reqUrl***^^^***: ",url);
-  
-  //////////////////////////////////////
-
   trackData(state_.toLowerCase(), district_, url, cb);
 
 })
