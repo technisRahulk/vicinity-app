@@ -257,6 +257,7 @@ router.post('/admin/insert', (req, response) => {
                             chunk = 6;
 
                             var city = state.cities.find(c => c.name === requestedCity)
+                            console.log(city)
                             var lim = city.photos.length;
 
                             var cnt = 0;
@@ -441,7 +442,7 @@ router.post("/admin/delete", auth, (req, res) => {
                 state.save()
                     .then(() => {
                         console.log("Deleted successfully");
-                        res.send("Deleted Successfully").redirect("/deleteform");
+                        res.redirect("/deleteform");
                     })
                     .catch((err) => {
                         res.status(400).send(err);

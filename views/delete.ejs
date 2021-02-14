@@ -68,7 +68,7 @@
                 <input type="hidden" id="state" name="state" value="<%= userstate %>">
                 <input type="hidden" id="city" name="city" value="<%= usercity %>">
                 <input type="hidden" id="url" name="url" value="">
-                <button class="btn btn-danger" type="submit" style="margin-top: 3rem;">Delete</button>
+                <button id="dltbtn" class="btn btn-danger" type="submit" style="margin-top: 3rem;">Delete</button>
             </form>
         </div>
     <% } %>
@@ -83,6 +83,10 @@
             document.getElementById('url').value = url;
             form1.submit();
         } 
+        var dltbtn = document.getElementById("dltbtn")
+        dltbtn.addEventListener("click", function(){
+            alert("Deleted Successfully")
+        })
     </script>
 
         <!-- Indicators -->
