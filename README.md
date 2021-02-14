@@ -10,7 +10,7 @@ An app for users to discover best travel destinations in their vicinity
 5. Insert `MONGODB_URL=mongodb+srv://vicinity2k21:<password>@vicinity.dzdde.mongodb.net/test?retryWrites=true&w=majority` in ".env" file. Also, replace **password** with actual password
 6. Add `FLICKR_API_KEY`, `EMAIL` and `PASS` in ".env" file
 7. Run `npm start` or `npm run dev` in the terminal
-> PORT for running on localhost is `3000`
+> PORT for running on localhost is `7000`
 
 ### Routes
 - GET route to homepage  `/`
