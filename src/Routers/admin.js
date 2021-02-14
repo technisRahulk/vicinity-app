@@ -16,9 +16,7 @@ router.post('/admin/singleInsert', auth, (req, response) => {
     var insertCity = req.body.city.toLowerCase();
     var insertState = req.body.state.toLowerCase();
 
-    console.log(insertUrl);
-
-
+    // console.log(insertUrl);
     const fun = async function () {
 
         const exists = await urlExist(insertUrl);
@@ -103,7 +101,7 @@ router.post('/admin/singleInsert', auth, (req, response) => {
 
                         newState.save()
                             .then(state => {
-                                console.log(state);
+                                // console.log(state);
                                 console.log("Hoooooray! Single image inserted successfully, city and state added!");
                             })
                             .catch(err => {
@@ -138,19 +136,14 @@ router.post('/admin/insert', (req, response) => {
 
     ///////////////////////////////////////////////////////////////////////
     /********      SUB-ROUTINE FOR CITY UPDATE BELOW      ************** */
-
-
-
-
     ///////////////////////////////////////////////////////////////////////
-
 
     flickr(requestedCity, (error, body) => {
         if (error) {
             console.log("there is error")
             return res.send({ error })
         }
-        console.log(body)
+        // console.log(body)
         var _s = body.photos.photo;
         var photos = []
         for (var z = 0; z < body.photos.photo.length; z++) {
@@ -188,7 +181,7 @@ router.post('/admin/insert', (req, response) => {
                                         const exists = await urlExist(city.photos[i].url);
                                         if (exists) {
                                             search(city.photos[i].url, (err, res) => {
-                                                console.log(i);
+                                                // console.log(i);
                                                 if (err) return console.log(err);
                                                 var body = res
                                                 var val = [];
@@ -254,7 +247,7 @@ router.post('/admin/insert', (req, response) => {
                     var cities = []
                     cities.push(currentCity)
                     const newState = new States({
-                        name: "assam",
+                        name: requestedState,
                         cities: cities
                     })
 
@@ -274,7 +267,7 @@ router.post('/admin/insert', (req, response) => {
                                         const exists = await urlExist(city.photos[i].url);
                                         if (exists) {
                                             search(city.photos[i].url, (err, res) => {
-                                                console.log(i);
+                                                // console.log(i);
                                                 if (err) return console.log(err);
                                                 var body = res
                                                 var val = [];
@@ -336,9 +329,6 @@ router.post('/admin/insert', (req, response) => {
                             console.log(err)
                         })
                 }
-
-
-
             })
     })
 
@@ -368,7 +358,7 @@ router.post('/admin/login', async (req, res) => {
         const admin = await Admin.findByCredentials(req.body.email, req.body.password)
         const token = await admin.generateAuthToken()
         res.cookie("token", token, { httpOnly: true })
-        console.log(admin)
+        // console.log(admin)
         res.redirect('/dashboard');
     } catch (e) {
         res.redirect('/login?error=' + encodeURIComponent('Incorrect_Credentials! Please enter your details again.'))
@@ -391,7 +381,7 @@ router.post("/admin/filter", auth, (req, res) => {
     // req.body = {state, city}
     const usercity = req.body.city.toLowerCase();
     const userstate = req.body.state.toLowerCase();
-    console.log(usercity, userstate);
+    // console.log(usercity, userstate);
 
     States.findOne({ name: userstate })
         .then(state => {
@@ -399,9 +389,14 @@ router.post("/admin/filter", auth, (req, res) => {
 
                 var i;
                 for (i = 0; i < state.cities.length; i++) {
-                    if (state.cities[i].name == usercity) {
+                    if (state.cities[i].name === usercity) {
                         break;
                     }
+                }
+                // console.log(state.cities[i], i);
+
+                if(i == state.cities.length){
+                    return res.render('error', {err: "Data of no such city found!"});
                 }
 
                 photo_url = []
@@ -410,10 +405,13 @@ router.post("/admin/filter", auth, (req, res) => {
                 }
 
                 res.render('delete', { usercity, userstate, photo_url });
+            } else {
+                res.render('error', {err: "No such data found!"});
             }
         })
         .catch((err) => {
-            res.status(400).send(err);
+            console.log(err);
+            res.render('error', {err})
         })
 });
 
@@ -438,7 +436,7 @@ router.post("/admin/delete", auth, (req, res) => {
                     return photo.url != url;
                 })
 
-                console.log(url, userstate, usercity)
+                // console.log(url, userstate, usercity)
 
                 state.save()
                     .then(() => {
