@@ -9,22 +9,7 @@
     <link rel = "stylesheet" href = "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <h1 class="logo mr-auto"><a href="/" style="text-decoration: none;color:black">vici<span style="color:#106EEA">NITY</span></a></h1>
-        <span style="margin:1em 1em 1em 1em;">Hi <%= admin.name %></span>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-      
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto">
-            <li><a href="/deleteform">Delete</a></li>
-          </ul>
-        <form method="POST" action="/admin/logout" class="form-inline my-2 my-lg-0">
-            <button class="btn btn-danger" type="submit">Logout</button>
-        </form>
-        </div>
-    </nav>
+    <%- include('../partials/header.ejs') %>
     <div class="container">
         <div class="row">
             <div class="col-sm-6">

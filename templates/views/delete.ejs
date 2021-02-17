@@ -1,0 +1,102 @@
+<style>
+    .carousel{
+        /* background: #2f4357; */
+        margin-top: 20px;
+    }
+    .carousel-item{
+        text-align: center;
+        height: 500px;
+        min-height: 280px; 
+    }
+    .slide-img{
+        width: inherit;
+        height: inherit;
+    }
+</style>
+<body>
+    <%- include('../partials/header.ejs') %>
+    <div class="container" style="margin: 4rem auto;">
+        <form method="POST" action="/admin/filter">
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-3 p-0">
+                    <input type="text" class="form-control" placeholder="Enter State" name="state">
+                </div>
+                <div class="col-md-3 p-0">
+                    <input type="text" class="form-control" placeholder="Enter City" name="city">
+                </div>
+                <div class="col-md-3 p-0">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <% if(photo_url.length > 0) {%>
+    <div class="container-lg my-3" style="width: 60%; min-width: 300px;">
+        <div id="myCarousel" class="carousel slide" data-ride="carousel">
+            <!-- Carousel indicators -->
+            <!-- <ol class="carousel-indicators">
+                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#myCarousel" data-slide-to="1"></li>
+                <li data-target="#myCarousel" data-slide-to="2"></li>
+            </ol> -->
+            <!-- Wrapper for carousel items -->
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="<%= photo_url[0] %>" style="width:100%; height: 500px;">
+                </div>
+
+                <% for(var i=1; i<photo_url.length; i++) { %>
+                    <div class="carousel-item">
+                        <img src="<%= photo_url[i] %>" style="width:100%; height: 500px;">
+                    </div>
+                <% } %>
+                <!-- <div class="carousel-item active">
+                    <img src="/img/about.jpg" class="slide-img" alt="First Slide">
+                </div>
+                <div class="carousel-item">
+                    <img src="/img/about.jpg" class="slide-img" alt="Second Slide">
+                </div>
+                <div class="carousel-item">
+                    <img src="/img/about.jpg" class="slide-img" alt="Third Slide">
+                </div> -->
+            </div>
+            <!-- Carousel controls -->
+            <a class="carousel-control-prev" href="#myCarousel" data-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </a>
+            <a class="carousel-control-next" href="#myCarousel" data-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </a>
+        </div>
+
+        <form method="POST" action="/admin/delete" id="delete-img" style="text-align: center;">
+            <input type="hidden" id="state" name="state" value="<%= userstate %>">
+            <input type="hidden" id="city" name="city" value="<%= usercity %>">
+            <input type="hidden" id="url" name="url" value="">
+            <button id="dltbtn" class="btn btn-danger" type="submit" style="margin-top: 3rem;">Delete</button>
+        </form>
+
+    </div>
+    <% } %>
+
+
+    <script>
+        var form1= document.getElementById("delete-img");  
+        form1.addEventListener("submit",deleteImg);
+        function deleteImg(event) {  
+            event.preventDefault(); 
+            const url = document.querySelector('div.carousel-inner > div.active > img').src;
+            console.log(url);
+            document.getElementById('url').value = url;
+            form1.submit();
+        } 
+        var dltbtn = document.getElementById("dltbtn")
+        dltbtn.addEventListener("click", function(){
+            alert("Deleted Successfully")
+        });
+    </script>
+
+</body>
+</html>

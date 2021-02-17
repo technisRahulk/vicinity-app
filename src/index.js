@@ -29,11 +29,11 @@ mongoose
     useFindAndModify: false,
     useCreateIndex: true,
   })
-  .then(() => console.log("Here Connected to mongo server"))
+  .then(() => console.log("Connected to mongo server"))
   .catch((err) => console.error(err));
 
 // set view engine and public directory path
-app.set('views', path.join(__dirname, './../views'));
+app.set('views', path.join(__dirname, './../templates/views'));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }))
 const publicDir = path.join(__dirname, './../public')

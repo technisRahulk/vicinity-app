@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vicinity</title>
+    <style>
+        img {
+            width: inherit;
+        }
+        tr:hover{
+            background-color: #f0f0f5;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header.ejs') %>
+
+    <div class="row">
+        <div class="col-md-4">
+            <img id="view-img" src="...">
+        </div>
+        <div class="col-md-8">
+            <table class="table">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">City</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Image Options</th>
+                    <th scope="col">Options</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <% for(const doc of docs) { %>
+                        <tr class="rows">
+                            <td><%= doc.city %></td>
+                            <td><%= doc.state %></td>
+                            <td style="display: none;"><%= doc.url %></td>
+                            <td><a class="btn btn-primary view mx-3 sm-my-3">View</a><a href="<%= doc.url %>" target="_blank" class="btn btn-primary">Visit Source</a></td>
+                            <td><button class="btn btn-success mx-3 sm-my-3 verify">Verify</button><button class="btn btn-danger discard">Discard</button></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+              </table>
+        </div>
+
+        <div id="result"></div>
+    </div>
+    <script>
+        $(document).ready(function() { 
+            $(".view").click(function(){
+                $('.rows').css('background-color', '#ffffff');
+                $('#view-img').attr("src", $(this).parent().parent().children().eq(2).html());
+                $(this).parent().parent().css('background-color', '#f0f0f5');
+            });
+
+            $(".discard").click(function() { 
+                $(this).parent().parent().fadeOut(); 
+            }); 
+
+            $('.verify').click(function(){
+                const city = $(this).parent().parent().children().eq(0).html().toLowerCase();
+                const state = $(this).parent().parent().children().eq(1).html().toLowerCase();
+                const url = $(this).parent().parent().children().eq(2).html().toLowerCase();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/insertUploaded',
+                    data: {
+                        city,
+                        state,
+                        url
+                    },
+                    success: function(response) {
+                        $('#result').html(response);
+                        alert(response);
+                    }
+                });
+
+            });
+        }); 
+    </script>
+</body>
+</html>

@@ -67,6 +67,44 @@ const search=(searchUrl,callback)=>{
     })
 }
 
+const sceneClassifier = (searchUrl) => {
+    return new Promise((resolve, reject) => {
+        
+        if(!checkURL(searchUrl)){
+            reject("Please insert an URL of a valid image file.");
+        }
+    
+        const url='https://flask-dl-api.herokuapp.com/predict?url=' + searchUrl;
+    
+        request({url,json:true},(error,body)=>{
+            if(body.statusCode != 200){
+                reject("URL not found.");
+            }
+    
+            if(error){
+                reject("DL API not accessed in search function");
+            }
+            else if(body.error){
+                reject('Unable to find the place');
+            }
+            else{
+                var res = JSON.stringify(body.body)
+                var resJSON = JSON.parse(res)
+                var user_arr = []
+                for(i=0; i<resJSON.length; i++){
+                    for(var key in resJSON[i]){
+                        user_arr.push(key)
+                        user_arr.push(resJSON[i][key].toString())
+                    }
+                }
+                resolve(user_arr);
+            }
+        })
+    })
+}
+
+
+
 //calculating similarity index between user photo tags and DB photo tags of the city mentioned by user
 //db_arr is and array of objects 
 const simIndex=((db_tags,user_arr)=>{
@@ -86,7 +124,10 @@ const simIndex=((db_tags,user_arr)=>{
         if(myMap.has(user_arr[i])){
             var val1 = myMap.get(user_arr[i]);
             var val2 = parseFloat(user_arr[i+1]);
-            ans += (2*Math.min(val1,val2));
+            var d = Math.abs(val1 - val2);
+            var exp_NN = 1 / (1 + d);
+            ans += exp_NN;
+            // ans += (2*Math.min(val1,val2));
         }
     }
     return ans;
@@ -256,5 +297,6 @@ module.exports = {
     search,
     simIndex,
     searchDist,
-    city
+    city,
+    sceneClassifier
 }

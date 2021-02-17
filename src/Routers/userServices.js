@@ -1,6 +1,7 @@
 const express = require("express");
 const States = require('../models/states.js')
-const { flickr, city, search, simIndex, searchDist } = require('../utils/flickr')
+const pendingUserUpload = require('../models/pendingUserUpload');
+const { city, search, simIndex, searchDist } = require('../utils/flickr')
 const trackData = require("../utils/finalAlgo");
 const multer = require('multer')
 const router = new express.Router();
@@ -138,6 +139,50 @@ var upload = multer({
     }
 });
 
+const cloudinary = require('cloudinary').v2
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+
+router.get('/userupload', (req, res) => {
+    res.render('userUpload');
+})
+
+router.post('/userupload', upload.single('file'), (req, res) => {
+    const reqState = req.body.state;
+    const reqCity = req.body.city;
+
+    const tempPath = req.file.originalname;
+    var uploadPath = __dirname + `./../../public/uploads/` + tempPath;
+
+    cloudinary.uploader.upload(uploadPath, function(err, body){
+        console.log(err, body.url);
+        if(err) {
+            return res.send(err);
+        }
+        const reqUrl = body.url;
+
+        const newUpload = new pendingUserUpload();
+        newUpload.state = reqState;
+        newUpload.city = reqCity;
+        newUpload.url = reqUrl;
+
+        newUpload.save()
+            .then((body) => {
+                fs.unlinkSync(uploadPath);
+                console.log("Deleted file: " + uploadPath);
+                res.send('Your uploaded Image has been forwarded to Admin Panel. We will get back to you once verification is done.')
+            })
+            .catch((err) => {
+                res.send(err);
+            })
+    })
+})
+
 
 // route for user to upload image and enter state name
 router.post('/searchbyimage', upload.single('file'), (req, response) => {
@@ -233,10 +278,9 @@ router.post('/searchbyimage', upload.single('file'), (req, response) => {
 // The main route
 router.post("/searchGlobal", upload.single('file1'), async (req, response) => {
     var state_, url_, district_, county_, city_, locality_;
-    console.log("searchGlobal route invoked")
     const tempPath = req.file.originalname;
     var uploadPath = __dirname + `./../../public/uploads/` + tempPath
-    console.log(uploadPath)
+
     await imgur.uploadFile(uploadPath)
         .then(function (json) {
             url = json.data.link
@@ -249,22 +293,10 @@ router.post("/searchGlobal", upload.single('file1'), async (req, response) => {
             console.log(err)
             return response.send('error', { err })
         })
-    console.log(url)
-    console.log(req.body.lat)
-    console.log(req.body.long)
+
     if (req.body.lat && req.body.long) {
         var lat_ = req.body.lat, long_ = req.body.long;
-        ////USE BELOW FOR DEV/TEST PUROPSE ONLY////
 
-        // lat_ = String(28+(6*Math.random()-3));
-        // long_ = String(77+(6*Math.random()-3));
-
-        // lat_ = String(26.38637274811449);
-        // long_ = String(74.85117091779458);
-
-
-        console.log("Here: ---- >  ", lat_, long_);
-        //////////////////////////////////////
         var x;
         try {
             x = await city(lat_, long_);
@@ -272,14 +304,13 @@ router.post("/searchGlobal", upload.single('file1'), async (req, response) => {
             response.render('error', { err })
         }
 
-        console.log("x: ", x);
         state_ = x.State;
         district_ = x.District;
         county_ = x.County;
         town_ = x.town;
         city_ = x.city;
         locality_ = x.locality;
-        console.log("Here: ---- >  ", state_, district_);
+
     } else {
         state_ = req.body.state;
         district_ = req.body.district;
@@ -288,187 +319,6 @@ router.post("/searchGlobal", upload.single('file1'), async (req, response) => {
 
 
     async function cb(globalArr) {
-        var promiseArr = [];
-        console.log(globalArr);
-        var i = 0, j = 0;
-        for (i = 0; i < globalArr.length; i++) {
-            for (j = 0; j < globalArr[i].length; j++) {
-                globalArr[i][j] = { ...globalArr[i][j], "i": i, "j": j };
-            }
-        }
-
-        for (i = 0; i < globalArr.length; i++) {
-            for (j = 0; j < globalArr[i].length; j++) {
-                promiseArr.push(new Promise((resolve, reject) => {
-                    var tt = [];
-                    console.log("Heree----", district_, globalArr[i][j].city)
-                    Object.assign(tt, globalArr[i][j]);
-
-
-
-                    searchDist(city_, globalArr[i][j].state, (err, res) => {
-                        if (res === undefined || err || res.distance > 4000) {
-
-
-
-                            searchDist(city_, globalArr[tt.i][tt.j].city, (err, res) => {
-                                if (res === undefined || err || res.distance > 4000) {
-
-
-                                    searchDist(locality_, globalArr[tt.i][tt.j].state, (err, res) => {
-                                        if (res === undefined || err || res.distance > 4000) {
-
-                                            searchDist(locality_, globalArr[tt.i][tt.j].city, (err, res) => {
-
-                                                if (res === undefined || err || res.distance > 4000) {
-
-                                                    searchDist(district_, globalArr[tt.i][tt.j].state, (err, res) => {
-
-                                                        if (res === undefined || err || res.distance > 4000) {
-
-                                                            searchDist(district_, globalArr[tt.i][tt.j].city, (err, res) => {
-
-                                                                if (res === undefined || err || res.distance > 4000) {
-
-                                                                    searchDist(town_, globalArr[tt.i][tt.j].state, (err, res) => {
-
-                                                                        if (res === undefined || err || res.distance > 4000) {
-
-                                                                            searchDist(town_, globalArr[tt.i][tt.j].city, (err, res) => {
-
-                                                                                if (res === undefined || err || res.distance > 4000) {
-
-                                                                                    searchDist(county_, globalArr[tt.i][tt.j].state, (err, res) => {
-
-                                                                                        if (res === undefined || err || res.distance > 4000) {
-
-                                                                                            searchDist(county_, globalArr[tt.i][tt.j].city, (err, res) => {
-
-                                                                                                if (res === undefined || err || res.distance > 4000) {
-
-                                                                                                    searchDist(state_, globalArr[tt.i][tt.j].state, (err, res) => {
-
-                                                                                                        if (res === undefined || err || res.distance > 4000) {
-
-                                                                                                            searchDist(state_, globalArr[tt.i][tt.j].city, (err, res) => {
-
-                                                                                                                if (err) {
-                                                                                                                    console.log(err)
-                                                                                                                    var temp = { ...tt, "dist": "Unknown" };
-                                                                                                                    globalArr[tt.i][tt.j] = temp;
-                                                                                                                    resolve(res);
-                                                                                                                }
-                                                                                                                else {
-                                                                                                                    var temp = { ...tt, "dist": res.distance };
-                                                                                                                    globalArr[tt.i][tt.j] = temp;
-                                                                                                                    resolve(res);
-                                                                                                                }
-
-                                                                                                            })
-
-                                                                                                        }
-                                                                                                        else {
-                                                                                                            var temp = { ...tt, "dist": res.distance };
-                                                                                                            globalArr[tt.i][tt.j] = temp;
-                                                                                                            resolve(res);
-                                                                                                        }
-
-                                                                                                    })
-
-                                                                                                }
-                                                                                                else {
-                                                                                                    var temp = { ...tt, "dist": res.distance };
-                                                                                                    globalArr[tt.i][tt.j] = temp;
-                                                                                                    resolve(res);
-                                                                                                }
-
-                                                                                            })
-
-                                                                                        }
-                                                                                        else {
-                                                                                            var temp = { ...tt, "dist": res.distance };
-                                                                                            globalArr[tt.i][tt.j] = temp;
-                                                                                            resolve(res);
-                                                                                        }
-
-                                                                                    })
-
-                                                                                }
-                                                                                else {
-                                                                                    var temp = { ...tt, "dist": res.distance };
-                                                                                    globalArr[tt.i][tt.j] = temp;
-                                                                                    resolve(res);
-                                                                                }
-
-                                                                            })
-
-                                                                        }
-                                                                        else {
-                                                                            var temp = { ...tt, "dist": res.distance };
-                                                                            globalArr[tt.i][tt.j] = temp;
-                                                                            resolve(res);
-                                                                        }
-
-                                                                    })
-
-                                                                }
-                                                                else {
-                                                                    var temp = { ...tt, "dist": res.distance };
-                                                                    globalArr[tt.i][tt.j] = temp;
-                                                                    resolve(res);
-                                                                }
-
-                                                            })
-
-                                                        }
-                                                        else {
-                                                            var temp = { ...tt, "dist": res.distance };
-                                                            globalArr[tt.i][tt.j] = temp;
-                                                            resolve(res);
-                                                        }
-
-                                                    })
-
-                                                }
-                                                else {
-                                                    var temp = { ...tt, "dist": res.distance };
-                                                    globalArr[tt.i][tt.j] = temp;
-                                                    resolve(res);
-                                                }
-
-                                            })
-
-                                        }
-                                        else {
-                                            var temp = { ...tt, "dist": res.distance };
-                                            globalArr[tt.i][tt.j] = temp;
-                                            resolve(res);
-                                        }
-
-                                    })
-
-
-                                }
-                                else {
-                                    var temp = { ...tt, "dist": res.distance };
-                                    globalArr[tt.i][tt.j] = temp;
-                                    resolve(res);
-                                }
-
-                            })
-
-
-                        }
-                        else {
-                            var temp = { ...tt, "dist": res.distance };
-                            globalArr[tt.i][tt.j] = temp;
-                            resolve(res);
-                        }
-                    })
-                }))
-            }
-        }
-        await Promise.all(promiseArr);
         const customDistComparator = (a, b) => {
             return a.dist - b.dist;
         }
@@ -511,7 +361,7 @@ router.post("/searchGlobal", upload.single('file1'), async (req, response) => {
         }
         finalAns.push(temp);
         for (i = 0; i < finalAns.length; i++) finalAns[i].sort(customDistComparator);
-        console.log('this is the one: ', finalAns);
+        console.log('finalAns: ', finalAns);
         var res = []
         response.render('index', { finalAns, res, url, state_ });
     }

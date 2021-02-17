@@ -2,7 +2,8 @@ const express = require("express");
 const auth = require("../middleware/auth");
 const Admin = require('../models/admin')
 const States = require('../models/states.js')
-const { flickr, city, search, simIndex, searchDist } = require('../utils/flickr')
+const pendingUserUpload = require('../models/pendingUserUpload')
+const { flickr, city, search, simIndex, searchDist, sceneClassifier } = require('../utils/flickr')
 const cookieParser = require("cookie-parser");
 const urlExist = require('url-exist');
 const router = new express.Router();
@@ -22,16 +23,8 @@ router.post('/admin/singleInsert', auth, (req, response) => {
         const exists = await urlExist(insertUrl);
 
         if (exists) {
-            const doSearchFunc = (url) => {
-                return new Promise((resolve, reject) => {
-                    search(url, (err, body) => {
-                        if (err) reject(err);
-                        resolve(body);
-                    })
-                })
-            }
 
-            var insertTags = await doSearchFunc(insertUrl);
+            var insertTags = await sceneClassifier(insertUrl);
 
             // console.log(insertTags);
             var v = [];
@@ -382,7 +375,7 @@ router.post("/admin/filter", auth, (req, res) => {
     // req.body = {state, city}
     const usercity = req.body.city.toLowerCase();
     const userstate = req.body.state.toLowerCase();
-    // console.log(usercity, userstate);
+    const admin = req.admin;
 
     States.findOne({ name: userstate })
         .then(state => {
@@ -394,7 +387,6 @@ router.post("/admin/filter", auth, (req, res) => {
                         break;
                     }
                 }
-                // console.log(state.cities[i], i);
 
                 if(i == state.cities.length){
                     return res.render('error', {err: "Data of no such city found!"});
@@ -405,7 +397,7 @@ router.post("/admin/filter", auth, (req, res) => {
                     photo_url.push(state.cities[i].photos[j].url)
                 }
 
-                res.render('delete', { usercity, userstate, photo_url });
+                res.render('delete', { usercity, userstate, photo_url, admin });
             } else {
                 res.render('error', {err: "No such data found!"});
             }
@@ -461,35 +453,57 @@ router.get("/deleteform", auth, (req, res) => {
     res.render('delete', { photo_url, admin });
 })
 
+router.get('/pendinguploads', auth, async (req, res) => {
+    try {
+        const docs = await pendingUserUpload.find({});
+        const admin = req.admin;
+        res.render('pendingUploads', {docs, admin});
+    } catch (err) {
+        res.render('error', {err});
+    }
+    
+})
 
+router.post('/insertUploaded', auth, async (req, res) => {
+
+    console.log(req.body.city, req.body.state);
+
+    try {
+        const tags = await sceneClassifier(req.body.url);
+        var insertTags = [];
+        for (var j = 0; j < tags.length; j += 2) {
+            insertTags.push({
+                name: tags[j],
+                prob: tags[j + 1]
+            });
+        }
+        console.log(insertTags);
+
+        const state = await States.findOne({name: req.body.state});
+        const city = await state.cities.find(c => c.name === req.body.city);
+        if(city) {
+            city.photos.push({
+                url: req.body.url,
+                tags: insertTags,
+                isActive: true
+            })
+        } else {
+            state.cities.push({
+                name: req.body.city,
+                photos: [{
+                    url: req.body.url,
+                    tags: insertTags,
+                    isActive: true
+                }]
+            })
+        }
+        await state.save();
+        res.send('Image saved successfully.');
+
+    } catch(err) {
+        res.render('error', {err});
+    }
+    
+})
 
 module.exports = router;
-
-
-
-
-//sign-up route
-// router.post('/admin/signup', async (req, res) => //sign up
-// {
-//     const data = req.body // contains the posted data
-//     const admin = new Admin(data)
-//     try {
-//         await admin.save()
-//         const token = await admin.generateAuthToken()
-//         res.cookie("token", token, { httpOnly: true })
-//         //res.send({admin,token})
-//         res.redirect('/dashboard');
-//     } catch (e) {
-//         res.status(400).send(e)
-//     }
-// })
-
-//sign-up form
-// router.get('/signup', (req, res) => {
-//     const token = req.cookies.token;
-//     //console.log(req.cookies.token)
-//     if (!token) {
-//         return res.render('signupform')
-//     }
-//     res.redirect('/dashboard');
-// })
