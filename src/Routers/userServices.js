@@ -139,50 +139,6 @@ var upload = multer({
     }
 });
 
-const cloudinary = require('cloudinary').v2
-
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-
-router.get('/userupload', (req, res) => {
-    res.render('userUpload');
-})
-
-router.post('/userupload', upload.single('file'), (req, res) => {
-    const reqState = req.body.state;
-    const reqCity = req.body.city;
-
-    const tempPath = req.file.originalname;
-    var uploadPath = __dirname + `./../../public/uploads/` + tempPath;
-
-    cloudinary.uploader.upload(uploadPath, function(err, body){
-        console.log(err, body.url);
-        if(err) {
-            return res.send(err);
-        }
-        const reqUrl = body.url;
-
-        const newUpload = new pendingUserUpload();
-        newUpload.state = reqState;
-        newUpload.city = reqCity;
-        newUpload.url = reqUrl;
-
-        newUpload.save()
-            .then((body) => {
-                fs.unlinkSync(uploadPath);
-                console.log("Deleted file: " + uploadPath);
-                res.send('Your uploaded Image has been forwarded to Admin Panel. We will get back to you once verification is done.')
-            })
-            .catch((err) => {
-                res.send(err);
-            })
-    })
-})
-
 
 // route for user to upload image and enter state name
 router.post('/searchbyimage', upload.single('file'), (req, response) => {
@@ -386,6 +342,50 @@ router.get("/viewDetails/:city/:state", async (req, res) => {
     } catch (e) {
         res.render('error', { err: e })
     }
+})
+
+const cloudinary = require('cloudinary').v2
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+
+router.get('/userupload', (req, res) => {
+    res.render('userUpload');
+})
+
+router.post('/userupload', upload.single('file'), (req, res) => {
+    const reqState = req.body.state.toLowerCase();
+    const reqCity = req.body.city.toLowerCase();
+
+    const tempPath = req.file.originalname;
+    var uploadPath = __dirname + `./../../public/uploads/` + tempPath;
+
+    cloudinary.uploader.upload(uploadPath, function(err, body){
+        console.log(err, body.url);
+        if(err) {
+            return res.send(err);
+        }
+        const reqUrl = body.url;
+
+        const newUpload = new pendingUserUpload();
+        newUpload.state = reqState;
+        newUpload.city = reqCity;
+        newUpload.url = reqUrl;
+
+        newUpload.save()
+            .then((body) => {
+                fs.unlinkSync(uploadPath);
+                console.log("Deleted file: " + uploadPath);
+                res.send('Your uploaded Image has been forwarded to Admin Panel. We will get back to you once verification is done.')
+            })
+            .catch((err) => {
+                res.send(err);
+            })
+    })
 })
 
 

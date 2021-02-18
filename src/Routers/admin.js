@@ -433,8 +433,10 @@ router.post("/admin/delete", auth, (req, res) => {
 
                 state.save()
                     .then(() => {
-                        console.log("Deleted successfully");
-                        res.redirect("/deleteform");
+                        const success = "Deleted successfully"
+                        console.log(success);
+                        // res.redirect("/deleteform");
+                        res.send(success);
                     })
                     .catch((err) => {
                         res.status(400).send(err);
@@ -453,6 +455,10 @@ router.get("/deleteform", auth, (req, res) => {
     res.render('delete', { photo_url, admin });
 })
 
+//<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
+//<<<<< PENDING USER UPLOADS SECTION >>>>>>
+//<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
+
 router.get('/pendinguploads', auth, async (req, res) => {
     try {
         const docs = await pendingUserUpload.find({});
@@ -466,8 +472,11 @@ router.get('/pendinguploads', auth, async (req, res) => {
 
 router.post('/insertUploaded', auth, async (req, res) => {
 
-    console.log(req.body.city, req.body.state);
+    const reqState = req.body.state.toLowerCase();
+    const reqCity = req.body.city.toLowerCase();
 
+    console.log(reqState, reqCity);
+    
     try {
         const tags = await sceneClassifier(req.body.url);
         var insertTags = [];
@@ -479,8 +488,8 @@ router.post('/insertUploaded', auth, async (req, res) => {
         }
         console.log(insertTags);
 
-        const state = await States.findOne({name: req.body.state});
-        const city = await state.cities.find(c => c.name === req.body.city);
+        const state = await States.findOne({name: reqState});
+        const city = await state.cities.find(c => c.name === reqCity);
         if(city) {
             city.photos.push({
                 url: req.body.url,
@@ -489,7 +498,7 @@ router.post('/insertUploaded', auth, async (req, res) => {
             })
         } else {
             state.cities.push({
-                name: req.body.city,
+                name: reqCity,
                 photos: [{
                     url: req.body.url,
                     tags: insertTags,
@@ -501,9 +510,36 @@ router.post('/insertUploaded', auth, async (req, res) => {
         res.send('Image saved successfully.');
 
     } catch(err) {
-        res.render('error', {err});
+        res.send(err);
     }
     
+});
+
+router.post('/deletepending', auth, async (req, res) => {
+    try {
+        const docs = await pendingUserUpload.findOneAndDelete({city: req.body.city, state: req.body.state, url: req.body.url });
+        if(!docs) {
+            return res.send('Error deleting from pending uploads!');
+        } 
+
+        console.log(docs);
+
+        res.send('Deleted from pending Uploads');
+    } catch (err) {
+        res.send(err);
+    }
+});
+
+// deleting all entries from pendingUserUpload collection
+router.get('/deleteallpending', auth, async(req, res) => {
+    try {
+        const docs = await pendingUserUpload.deleteMany({});
+        console.log(docs);
+        res.send(docs);
+    } catch(err) {
+        console.log(err);
+        res.send(err);
+    }
 })
 
 module.exports = router;

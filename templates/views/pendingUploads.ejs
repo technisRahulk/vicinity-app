@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>Vicinity</title>
     <style>
         img {
@@ -12,41 +13,58 @@
         tr:hover{
             background-color: #f0f0f5;
         }
+        table {
+            font-family: Consolas,monaco,monospace;
+        }
+        .btn {
+            font-family:sans-serif;
+        }
+        #view-img {
+            transition-property: width;
+            transition-duration: 1s;
+            transition-timing-function: linear;
+            transition-delay: 0.5s;
+        }
     </style>
 </head>
 <body>
     <%- include('../partials/header.ejs') %>
 
-    <div class="row">
-        <div class="col-md-4">
-            <img id="view-img" src="...">
+    <% if(!docs.length){ %>
+        <h1>No Pending User Uploads available now.</h1>
+    <% } else { %>
+        <div class="row">
+            <div class="col-md-4">
+                <img id="view-img" src="...">
+            </div>
+            <div class="col-md-8">
+                <table class="table">
+                    <thead class="thead-dark">
+                      <tr>
+                        <th scope="col">City</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Image Options</th>
+                        <th scope="col">Options</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <% for(const doc of docs) { %>
+                            <tr class="rows">
+                                <td><%= doc.city %></td>
+                                <td><%= doc.state %></td>
+                                <td style="display: none;"><%= doc.url %></td>
+                                <td><a class="btn btn-primary view mx-3 sm-my-3">View</a><a href="<%= doc.url %>" target="_blank" class="btn btn-primary">Visit Source</a></td>
+                                <td>
+                                    <button class="btn btn-success mx-3 sm-my-3 px-4 verify">Verify<i></i></button>
+                                    <button class="btn btn-danger px-3 discard">Discard<i></i></button>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                  </table>
+            </div>
         </div>
-        <div class="col-md-8">
-            <table class="table">
-                <thead class="thead-dark">
-                  <tr>
-                    <th scope="col">City</th>
-                    <th scope="col">State</th>
-                    <th scope="col">Image Options</th>
-                    <th scope="col">Options</th>
-                  </tr>
-                </thead>
-                <tbody>
-                    <% for(const doc of docs) { %>
-                        <tr class="rows">
-                            <td><%= doc.city %></td>
-                            <td><%= doc.state %></td>
-                            <td style="display: none;"><%= doc.url %></td>
-                            <td><a class="btn btn-primary view mx-3 sm-my-3">View</a><a href="<%= doc.url %>" target="_blank" class="btn btn-primary">Visit Source</a></td>
-                            <td><button class="btn btn-success mx-3 sm-my-3 verify">Verify</button><button class="btn btn-danger discard">Discard</button></td>
-                        </tr>
-                    <% } %>
-                </tbody>
-              </table>
-        </div>
-
-        <div id="result"></div>
-    </div>
+    <% } %>
     <script>
         $(document).ready(function() { 
             $(".view").click(function(){
@@ -56,14 +74,58 @@
             });
 
             $(".discard").click(function() { 
-                $(this).parent().parent().fadeOut(); 
-            }); 
+                const loading = $(this).find('i');
+                loading.css("margin", "auto 0 auto 1rem");
+                loading.addClass("fa fa-circle-o-notch fa-spin");
 
-            $('.verify').click(function(){
+                const row = $(this).parent().parent();
                 const city = $(this).parent().parent().children().eq(0).html().toLowerCase();
                 const state = $(this).parent().parent().children().eq(1).html().toLowerCase();
                 const url = $(this).parent().parent().children().eq(2).html().toLowerCase();
 
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/deletepending',
+                    data: {
+                        city,
+                        state, 
+                        url
+                    },
+                    success: function(res) {
+                        loading.removeClass("fa fa-circle-o-notch fa-spin");
+                        loading.css("margin", "auto");
+                        alert(res);
+                        row.fadeOut('slow');
+                    }
+                });
+            }); 
+
+            $('.verify').click(function(){
+                const loading = $(this).find('i');
+                loading.css("margin", "auto 0 auto 1rem");
+                loading.addClass("fa fa-circle-o-notch fa-spin");
+
+                const row = $(this).parent().parent();
+                const city = $(this).parent().parent().children().eq(0).html().toLowerCase();
+                const state = $(this).parent().parent().children().eq(1).html().toLowerCase();
+                const url = $(this).parent().parent().children().eq(2).html().toLowerCase();
+
+                // $(this).find('i').addClass("fa fa-circle-o-notch fa-spin");
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/deletepending',
+                    data: {
+                        city,
+                        state, 
+                        url
+                    },
+                    success: function(res) {
+                        alert(res);
+                        row.fadeOut('slow');
+                    }
+                });
                 $.ajax({
                     type: 'POST',
                     url: '/insertUploaded',
@@ -73,8 +135,21 @@
                         url
                     },
                     success: function(response) {
-                        $('#result').html(response);
-                        alert(response);
+                        $.ajax({
+                            type: 'POST',
+                            url: '/deletepending',
+                            data: {
+                                city,
+                                state, 
+                                url
+                            },
+                            success: function(res) {
+                                loading.removeClass("fa fa-circle-o-notch fa-spin");
+                                loading.css("margin", "auto");
+                                alert(response + ' ' + res);
+                                row.fadeOut('slow');
+                            }
+                        })
                     }
                 });
 
