@@ -380,12 +380,20 @@ router.post('/userupload', upload.single('file'), (req, res) => {
             .then((body) => {
                 fs.unlinkSync(uploadPath);
                 console.log("Deleted file: " + uploadPath);
-                res.send('Your uploaded Image has been forwarded to Admin Panel. We will get back to you once verification is done.')
+                res.render('success', {msg: 'Your uploaded Image has been forwarded to Admin Panel. We will get back to you once verification is done.'});
             })
             .catch((err) => {
-                res.send(err);
+                res.render('error', {err});
             })
     })
+});
+
+router.get('/success', (req, res) => {
+    res.render('success', {msg: "Success"});
+});
+
+router.get('/error', (req, res) => {
+    res.render('error', {err: "this is err"});
 })
 
 

@@ -15,25 +15,32 @@
             margin: 20px;
         }
         .alert{
-            font-size: 2rem;
+            font-size: 1.2rem;
         }
     </style>
 </head>
-<body>
-<div class="bs-example"> 
-    <div class="alert alert-warning alert-dismissible fade show">
-        <h4 class="alert-heading"><i class="fa fa-warning"></i> Warning!</h4>
-        <p><%= err %></p>
-        <hr>
-        <!-- <p class="mb-0">Once you have filled all the details, click on the 'Next' button to continue.</p> -->
-        <button type="button" class="close" data-dismiss="alert" onclick="goback()">&times;</button>
+<body style="background-color: darkslategrey;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 col-sm-0"></div>
+            <div class="col-md-8 col-sm-12">
+                <div class="bs-example"> 
+                    <div class="alert alert-warning alert-dismissible fade show">
+                        <h4 class="alert-heading"><i class="fa fa-warning"></i> Warning!</h4>
+                        <p><%= err %></p>
+                        <hr>
+                        <button type="button" class="close" data-dismiss="alert" onclick="goback()">&times;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    
 
     <script>
         function goback(){
             window.history.back()
         }
     </script>
-</div>
 </body>
 </html>

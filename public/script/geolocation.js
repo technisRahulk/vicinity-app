@@ -14,7 +14,7 @@ function getlocation(event) {
         console.log(position.coords); 
         x.value =  position.coords.latitude 
         y.value =  position.coords.longitude; 
-        form1.submit()
+        form1.submit();
         flag=true;
        });
     }  

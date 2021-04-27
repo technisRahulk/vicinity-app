@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vicinity</title>
+    <link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css" >
+</head>
+<body style="background-color:darkslategrey;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 col-sm-0"></div>
+            <div class="col-md-8 col-sm-12">
+                <div class="alert alert-success my-5" role="alert">
+                    <h2 class="alert-heading">Success!</h2>
+                    <p><%= msg %></p>
+                    <hr>
+                    <div style="text-align: center;">
+                        <a class="btn mb-0" onclick="goback()"><strong>OK</strong></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function goback(){
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
