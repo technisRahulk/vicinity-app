@@ -33,6 +33,7 @@ const mapPhotos = async() => {
         const photos = await Photo.find({})
         for(photo of photos){
             var url = photo.url
+            var id = photo._id
             callLshApi(url, (err, res) => {
                 if(err) console.log(err)
                 else {
@@ -40,7 +41,7 @@ const mapPhotos = async() => {
                         var bucketID = element.bucketID
                         var li = element.li
                         LshPhotos.findOne({bucketID})
-                            .then(bucket => { bucket.li.push(url) })
+                            .then(bucket => { bucket.li.push(id) })
                             .then(LshPhotos.save())
                     });
                 }
