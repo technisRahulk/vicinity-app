@@ -17,6 +17,32 @@ mongoose.connect(process.env.MONGODB_URL, {
     console.log(err)
 })
 
+const fun = async() => {
+    const newentry = new LshPhotos(data);
+    try{
+        const savedData = await newentry.save();
+        console.log(savedData, 'Data saved successfully');
+    } catch(e){
+        console.log('error', e);
+    }
+}
+
+
+
+// const del = async() => {
+//     try{
+//         const deleted = await LshPhotos.deleteMany({});
+//         console.log('Deleted all');
+//     } catch(e){
+//         console.log(e);
+//     }
+// }
+
+// del();
+// fun();
+
+
+
 const lshApi = 'https://flask-vector-lsh.herokuapp.com/predict?url='
 
 const callLshApi = (url, callback) => {
@@ -52,5 +78,7 @@ const mapPhotos = async() => {
 
     }
 }
+
+
 
 module.exports = mapPhotos

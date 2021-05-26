@@ -36,6 +36,19 @@ const updateDB = async() => {
     }
 }
 
+const findPhoto = async(inputId) => {
+    try{
+        const photo = await Photo.find({_id: inputId});
+        console.log(photo)
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+for (item of testIds){
+    findPhoto(item);
+}
+
 // updateDB();
 
 // const del = async() => {
