@@ -136,7 +136,7 @@
                 <h3>Upload an Image, sit back and enjoy!</h3>
               </div>
               <div class="card-body">
-                <form id="input-form-1" method="POST" enctype="multipart/form-data" action="/searchGlobal">
+                <form id="input-form-1" method="POST" enctype="multipart/form-data" action="/searchLSH">
                   <div class="row">
                     <input type="hidden" name="lat"  id="lat" value="">
                     <input type="hidden" name="long" id="long" value="">
@@ -303,7 +303,7 @@
 
 
       
-       
+       <!-- Search LSH -->
       <!-- rendering for search by image and search by URL routes [res] -->
       <% if (res.length != 0) {%>
         <input type="hidden" name="flag" class="flag" value="<%= res.length %>">
@@ -313,13 +313,15 @@
           <%for(let place of res){%>
             <div class="col-lg-4 col-md-6 portfolio-item filter-all aux">
               <img src="<%= place.url %>" class="img-fluid output" alt="">
-              <div class="portfolio-info">
-                <h4><%= place.city.toUpperCase() %></h4>
-                <p>
-                  <a style="float: right;" href="https://www.google.com/maps/search/?api=1&query=<%= place.city %>" target="_blank" style="color: blue"><i class='fas fa-map-marker-alt' style='font-size:24px'></i></a>
-                  <a style="float: right;" class="mx-3" href="/viewDetails/<%= place.city %>/<%= place.state %>?url=<%= place.url %>"><i class='fas fa-info-circle' style='font-size:24px'></i></a>
-                </p>
-              </div>
+              <% if (place.city!==undefined) {%>
+                <div class="portfolio-info">
+                  <h4><%= place.city.toUpperCase() %></h4>
+                  <p>
+                    <a style="float: right;" href="https://www.google.com/maps/search/?api=1&query=<%= place.city %>" target="_blank" style="color: blue"><i class='fas fa-map-marker-alt' style='font-size:24px'></i></a>
+                    <a style="float: right;" class="mx-3" href="/viewDetails/<%= place.city %>/<%= place.state %>?url=<%= place.url %>"><i class='fas fa-info-circle' style='font-size:24px'></i></a>
+                  </p>
+                </div>
+              <% } %>
             </div>
           <% } %>  
         </div>

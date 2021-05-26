@@ -14,7 +14,11 @@ const photoSchema = new mongoose.Schema({
         type: String,
         lowercase: true,
         require: true
-    }
+    },
+    tags :[{
+            name : String,
+            prob : String
+    }]
 });
 
 const Photo = mongoose.model('photo', photoSchema);
