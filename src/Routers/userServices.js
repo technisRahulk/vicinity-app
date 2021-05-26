@@ -7,7 +7,8 @@ const multer = require('multer')
 const router = new express.Router();
 const path = require('path')
 const fs = require('fs')
-var imgur = require('imgur')
+const imgur = require('imgur')
+const manhatten = require('../utils/manhatten')
 //Index route
 router.get('/', (req, response) => {
     var res = []
@@ -326,7 +327,29 @@ router.post("/searchGlobal", upload.single('file1'), async (req, response) => {
 
 })
 
-
+router.post("/searchLSH", upload.single('file1'), async (req, response) => {
+    var state_, url_, district_, county_, city_, locality_;
+    const tempPath = req.file.originalname;
+    var uploadPath = __dirname + `./../../public/uploads/` + tempPath
+    var emptyArr = []
+    try{
+        const fileUploded = await imgur.uploadFile(uploadPath)
+        console.log("Uploaded")
+        const url = fileUploded.data.link
+        console.log("Url",url)
+        fs.unlinkSync(uploadPath)
+        console.log("Deleted file: " + uploadPath)
+        
+        const results = await manhatten(url)
+        if(results.length == 0){
+            return response.render('index',{res :results,finalAns : emptyArr, url})
+        }
+        return response.render('index',{res :results,finalAns : emptyArr, url})
+    }catch(e){
+        console.log(e)
+        return response.render("error",{ err: e })
+    }
+})
 router.get("/viewDetails/:city/:state", async (req, res) => {
     console.log(req.params.city);
     console.log(req.query.user_state);

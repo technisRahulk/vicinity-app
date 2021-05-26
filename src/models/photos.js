@@ -15,9 +15,9 @@ const photoSchema = new mongoose.Schema({
         lowercase: true,
         require: true
     },
-    tags : [{
-        name: String,
-        prob: String
+    tags :[{
+        name : String,
+        prob : String
     }]
 });
 

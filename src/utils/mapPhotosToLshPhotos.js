@@ -47,7 +47,7 @@ const lshApi = 'https://flask-vector-lsh.herokuapp.com/predict?url='
 
 const callLshApi = (url, callback) => {
     req = lshApi+url
-    request({req, json:true}, (err,{body}={}) => {
+    request(req, {json:true}, (err,{body}={}) => {
         if(err) callback("flask-vector-lsh not accessed", undefined)
         else if(body.error) callback("flask-vector-lsh did not respond", undefined)
         else callback(undefined, body)
@@ -79,6 +79,7 @@ const mapPhotos = async() => {
     }
 }
 
-
-
-module.exports = mapPhotos
+module.exports ={
+  mapPhotos ,
+  callLshApi 
+} 
