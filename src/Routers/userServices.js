@@ -7,6 +7,7 @@ const router = new express.Router();
 const fs = require('fs')
 var imgur = require('imgur')
 const manhatten = require('../utils/manhatten')
+const path = require('path')
 
 const cloudinary = require('cloudinary').v2
 cloudinary.config({
