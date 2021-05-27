@@ -230,8 +230,10 @@ router.post('/searchbyimage', upload.single('file'), (req, response) => {
 
 router.post("/searchLSH", upload.single('file1'), async (req, response) => {
     const tempPath = req.file.originalname;
+    const uploadPath = path.join(__dirname, `./../../public/uploads/` + tempPath) 
     // const uploadPath = __dirname + `./../../public/uploads/` + tempPath
-    const uploadPath = `/app/public/uploads/` + tempPath
+    //For heroku
+    // const uploadPath = `/app/public/uploads/` + tempPath
     console.log("Path : ",uploadPath)
     const emptyArr = []
     var url = '';
