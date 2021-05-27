@@ -254,7 +254,7 @@ router.post("/searchLSH", upload.single('file1'), async (req, response) => {
         return response.render('index',{res: results, finalAns: emptyArr, url})
     } catch(e){
         // console.log(e)
-        return response.render('error', {err: "OOPS! Seems like IMGUR didn't function properly! Please go back and try again."});
+        return response.render('error', {err: e});
     }
 })
 
