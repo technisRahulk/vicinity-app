@@ -1,12 +1,9 @@
-const mongoose = require("mongoose");
 const Photos = require('../models/photos')
 const path = require('path');
-const request=require('request')
 const axios = require('axios')
 var fs = require('fs');
-const {Heap} = require('heap-js');
 const { JSDOM } = require("jsdom");
-const { window } = new JSDOM();
+// const { window } = new JSDOM();
 
 var collecPhotos = []
 collecPhotos[0] = require("../../public/photos/photos1.json")
@@ -24,19 +21,6 @@ collecPhotos[10] = require("../../public/photos/photos11.json")
 
 require("dotenv").config({path:path.resolve(__dirname, '../../config/.env')});
 
-var photosArray = []
-
-mongoose.connect(process.env.MONGODB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-}).then( async () => {
-    console.log("Connected to mongo server from mapPhotosToLshPhotos")
-}).catch((err) => {
-    console.log(err)
-})
-
 
 //Preparing the array of classNames
 var className = fs.readFileSync('categories_places365.txt').toString().split("\n");
@@ -48,10 +32,6 @@ for(i in className) {
 const predApi = 'https://flask-vector-lsh.herokuapp.com/predict?url='
 const queryApi = 'https://flask-vector-lsh.herokuapp.com/queryImage?url='
 
-//comparator for Priority Queue
-const customPriorityComparator = (a,b) =>{
-    return b.error - a.error;
-}
 
 const callPredictApi = async (url) => {
     try{
@@ -141,7 +121,6 @@ const manhatten = async(ui) => {
             }
             results.push(obj)
         }
-        // console.log(results)
         return results
     }
     catch(e){
@@ -149,11 +128,6 @@ const manhatten = async(ui) => {
         return []
     }
 }
-
-
-
-
-// manhatten(ui)
 
 module.exports = manhatten
 

@@ -35,7 +35,7 @@
 
 <body>
   <!-- loader for outputs -->
-  <div class="ld justify-content-center" id="myDIV">Please, be with us.... We are searching for best matches in our records!</div>
+  <div class="ld justify-content-center" id="myDIV">Please bear with us while we search for best results...</div>
   <!-- ======= Header ======= -->
   <header id="header" class="fixed-top">
     <div class="container d-flex align-items-center">
@@ -49,12 +49,10 @@
           <li><a href="#portfolio">Search</a></li>
           <li><a href="#team">Team</a></li>
           <li><a href="#contact">Contact</a></li>
-          <!-- <li><a href="/signup">SignUp</a></li> -->
           <li><a href="/userupload">Upload</a></li>
           <li><a href="/login">Admin Login</a></li>
         </ul>
       </nav>
-
     </div>
   </header>
   <!-- End Header -->
@@ -66,7 +64,6 @@
       <h2>Discover the best travel destinations in your <strong>vicinity!</strong></h2>
       <div class="d-flex">
         <a href="#featured-services" class="btn-get-started scrollto">Get Started</a>
-        <!-- <a href="https://www.youtube.com/watch?v=jDDaplaOz7Q" class="venobox btn-watch-video" data-vbtype="video" data-autoplay="true"> Watch Video <i class="icofont-play-alt-2"></i></a> -->
       </div>
     </div>
   </section>
@@ -142,7 +139,7 @@
                     <input type="hidden" name="long" id="long" value="">
                     <input type="hidden" name="test" id="test" value="">
                     <div class="col-md-8 col-sm-12 mt-3">
-                      <input type="file" name="file1" class="form-control-file file-choose ml-1" id="exampleInputFile" aria-describedby="fileHelp">
+                      <input type="file" name="file1" class="form-control-file file-choose ml-1" id="exampleInputFile" aria-describedby="fileHelp" required>
                     </div>
                     <div class="col-md-4 col-sm-12 mt-3">
                       <button type="submit" class="btn btn-primary" style="width: 50%">Submit</button>
@@ -211,7 +208,7 @@
                           <option value='West Bengal'>West Bengal</option>
                         </select>
                       </div>
-                      <input type="file" name="file" class=" mt-2 form-control-file file-choose" id="exampleInputFile" aria-describedby="fileHelp">
+                      <input type="file" name="file" class=" mt-2 form-control-file file-choose" id="exampleInputFile" aria-describedby="fileHelp" required>
                     </div>
                     <div class="col-md-4 col-sm-12 mt-3">
                       <button type="submit" class="btn btn-primary" style="width: 80%">Submit</button>
@@ -237,25 +234,18 @@
                     <div class="col-md-8 col-sm-12 mt-3">
                       <div class="input-group mb-3">
                         <select class="custom-select" id="inputGroupSelect01" name="state">
-                          <!-- <option value='Andaman and Nicobar Islands'>Andaman and Nicobar Islands</option> -->
                           <option value='Andhra Pradesh'>Andhra Pradesh</option>
                           <option value='Arunachal Pradesh'>Arunachal Pradesh</option>
                           <option value='Assam'>Assam</option>
                           <option value='Bihar'>Bihar</option>
-                          <!-- <option value='Chandigarh'>Chandigarh</option> -->
                           <option value='Chhattisgarh'>Chhattisgarh</option>
-                          <!-- <option value='Dadra and Nagar Haveli'>Dadra and Nagar Haveli</option> -->
-                          <!-- <option value='Daman and Diu'>Daman and Diu</option> -->
-                          <!-- <option value='Delhi'>Delhi</option> -->
                           <option value='Goa'>Goa</option>
                           <option value='Gujarat'>Gujarat</option>
                           <option value='Haryana'>Haryana</option>
                           <option value='Himachal Pradesh'>Himachal Pradesh</option>
-                          <!-- <option value='Jammu and Kashmir'>Jammu and Kashmir</option> -->
                           <option value='Jharkhand'>Jharkhand</option>
                           <option value='Karnataka'>Karnataka</option>
                           <option value='Kerala'>Kerala</option>
-                          <!-- <option value='Lakshadweep'>Lakshadweep</option> -->
                           <option value='Madhya Pradesh'>Madhya Pradesh</option>
                           <option value='Maharashtra'>Maharashtra</option>
                           <option value='Manipur'>Manipur</option>
@@ -263,7 +253,6 @@
                           <option value='Mizoram'>Mizoram</option>
                           <option value='Nagaland'>Nagaland</option>
                           <option value='Odisha'>Odisha</option>
-                          <!-- <option value='Puducherry'>Puducherry</option> -->
                           <option value='Punjab'>Punjab</option>
                           <option value='Rajasthan'>Rajasthan</option>
                           <option value='Sikkim'>Sikkim</option>
@@ -275,7 +264,7 @@
                           <option value='West Bengal'>West Bengal</option>
                         </select>
                       </div>
-                      <input type="url" name="url" class="mt-2 form-control" id="exampleInputEmail1" placeholder="Enter Url">
+                      <input type="url" name="url" class="mt-2 form-control" id="exampleInputEmail1" placeholder="Enter Url" required>
                     </div>
                     <div class="col-md-4 col-sm-12 mt-3">
                       <button type="submit" class="btn btn-primary" style="width: 80%">Submit</button>
@@ -301,9 +290,7 @@
       <% } %><br>
       <!--End of given img rendering-->
 
-
-      
-       <!-- Search LSH -->
+      <!-- Search LSH -->
       <!-- rendering for search by image and search by URL routes [res] -->
       <% if (res.length != 0) {%>
         <input type="hidden" name="flag" class="flag" value="<%= res.length %>">
@@ -316,6 +303,13 @@
               <% if (place.city!==undefined) {%>
                 <div class="portfolio-info">
                   <h4><%= place.city.toUpperCase() %></h4>
+                  <% if(place.state !== undefined) {%>
+                    <% const spaceIdx = place.state.lastIndexOf(' ') %>
+                    <% if(spaceIdx === -1) {%>
+                      <h6><%= place.state.substr(0, 1).toUpperCase() + place.state.substr(1) %></h6>
+                    <% } else {%>
+                      <h6><%= place.state.substr(0, 1).toUpperCase() + place.state.substr(1, spaceIdx) + place.state.substr(spaceIdx+1, 1).toUpperCase() + place.state.substr(spaceIdx+2) %></h6>
+                  <% }} %>
                   <p>
                     <a style="float: right;" href="https://www.google.com/maps/search/?api=1&query=<%= place.city %>" target="_blank" style="color: blue"><i class='fas fa-map-marker-alt' style='font-size:24px'></i></a>
                     <a style="float: right;" class="mx-3" href="/viewDetails/<%= place.city %>/<%= place.state %>?url=<%= place.url %>"><i class='fas fa-info-circle' style='font-size:24px'></i></a>
@@ -434,9 +428,6 @@
     </div>
     </section>
     <!-- End Portfolio Section -->
-
-
-      
 
     <!-- ======= Team Section ======= -->
     <section id="team" class="team section-bg mt-3">
@@ -634,13 +625,6 @@
   </section>
 
   <!-- ======= Footer ======= -->
-  <!-- <footer id="footer">
-    <div class="container py-4">
-      <div class="copyright">
-        &copy; Copyright <strong><span>viciNITY</span></strong>. All Rights Reserved
-      </div>
-    </div> 
-  </footer> -->
   <div id="preloader"></div>
   <a href="#" class="back-to-top"><i class="icofont-simple-up"></i></a>
 

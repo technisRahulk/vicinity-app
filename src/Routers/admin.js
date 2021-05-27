@@ -4,20 +4,16 @@ const Admin = require('../models/admin')
 const States = require('../models/states.js')
 const pendingUserUpload = require('../models/pendingUserUpload')
 const { flickr, city, search, simIndex, searchDist, sceneClassifier } = require('../utils/flickr')
-const cookieParser = require("cookie-parser");
 const urlExist = require('url-exist');
 const router = new express.Router();
 
 //insert photos array (url only) for a given city (state is hardcoded as of now)
 // incase the city doesn't exist, a new city object will be created
-
-
 router.post('/admin/singleInsert', auth, (req, response) => {
     var insertUrl = req.body.url;
     var insertCity = req.body.city.toLowerCase();
     var insertState = req.body.state.toLowerCase();
 
-    // console.log(insertUrl);
     const fun = async function () {
 
         const exists = await urlExist(insertUrl);
@@ -26,7 +22,6 @@ router.post('/admin/singleInsert', auth, (req, response) => {
 
             var insertTags = await sceneClassifier(insertUrl);
 
-            // console.log(insertTags);
             var v = [];
             for (var j = 0; j < insertTags.length; j += 2) {
                 v.push({
@@ -35,7 +30,6 @@ router.post('/admin/singleInsert', auth, (req, response) => {
                 })
             }
             insertTags = v;
-            // console.log(insertTags);
 
             States.findOne({ name: insertState })
                 .then((state) => {
@@ -123,9 +117,6 @@ router.post('/admin/singleInsert', auth, (req, response) => {
 router.post('/admin/insert', (req, response) => {
     var requestedCity = req.body.city.toLowerCase();
     var requestedState = req.body.state.toLowerCase();
-    //city, state, imageURL,
-    //console.log(city)
-
 
     ///////////////////////////////////////////////////////////////////////
     /********      SUB-ROUTINE FOR CITY UPDATE BELOW      ************** */
@@ -136,12 +127,10 @@ router.post('/admin/insert', (req, response) => {
             console.log("there is error")
             return res.send({ error })
         }
-        // console.log(body)
         var _s = body.photos.photo;
         var photos = []
         for (var z = 0; z < body.photos.photo.length; z++) {
             var CurrentPhotoUrl = 'https://farm' + _s[z]['farm'] + '.staticflickr.com/' + _s[z]['server'] + '/' + _s[z]['id'] + '_' + _s[z]['secret'] + '_n.jpg'
-            //console.log(CurrentPhotoUrl); 
             var photo = {
                 url: CurrentPhotoUrl,
                 tags: [],
@@ -153,7 +142,7 @@ router.post('/admin/insert', (req, response) => {
             name: requestedCity,
             photos: photos
         }
-        //console.log(currentCity.name)
+  
         States.findOne({ name: requestedState })
             .then(state => {
                 if (state) {
@@ -174,7 +163,7 @@ router.post('/admin/insert', (req, response) => {
                                         const exists = await urlExist(city.photos[i].url);
                                         if (exists) {
                                             search(city.photos[i].url, (err, res) => {
-                                                // console.log(i);
+                                                
                                                 if (err) return console.log(err);
                                                 var body = res
                                                 var val = [];
@@ -339,7 +328,7 @@ router.get('/dashboard', auth, async (req, res) => {
 router.get('/login', async (req, res) => {
     const data = await Admin.findOne({ email: req.email })
     const token = req.cookies.token;
-    //console.log(req.cookies.token)
+    
     if (!token) {
         return res.render('loginform', { error: req.query.error })
     }
@@ -352,11 +341,11 @@ router.post('/admin/login', async (req, res) => {
         const admin = await Admin.findByCredentials(req.body.email, req.body.password)
         const token = await admin.generateAuthToken()
         res.cookie("token", token, { httpOnly: true })
-        // console.log(admin)
+        
         res.redirect('/dashboard');
     } catch (e) {
         res.redirect('/login?error=' + encodeURIComponent('Incorrect_Credentials! Please enter your details again.'))
-        // res.status(400).send(e)
+        
     }
 })
 
@@ -372,7 +361,6 @@ router.post('/admin/logout', auth, async (req, res) => {
 })
 
 router.post("/admin/filter", auth, (req, res) => {
-    // req.body = {state, city}
     const usercity = req.body.city.toLowerCase();
     const userstate = req.body.state.toLowerCase();
     const admin = req.admin;
@@ -409,7 +397,6 @@ router.post("/admin/filter", auth, (req, res) => {
 });
 
 router.post("/admin/delete", auth, (req, res) => {
-    // req.body => state, city, url
     const usercity = req.body.city.toLowerCase();
     const userstate = req.body.state.toLowerCase();
     const url = req.body.url;
@@ -417,7 +404,6 @@ router.post("/admin/delete", auth, (req, res) => {
     States.findOne({ name: userstate })
         .then(state => {
             if (state) {
-                // console.log(state);
                 var i;
                 for (i = 0; i < state.cities.length; i++) {
                     if (state.cities[i].name == usercity) {
@@ -429,13 +415,10 @@ router.post("/admin/delete", auth, (req, res) => {
                     return photo.url != url;
                 })
 
-                // console.log(url, userstate, usercity)
-
                 state.save()
                     .then(() => {
                         const success = "Deleted successfully"
-                        console.log(success);
-                        // res.redirect("/deleteform");
+                        // console.log(success);
                         res.send(success);
                     })
                     .catch((err) => {

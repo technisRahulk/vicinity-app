@@ -1,6 +1,6 @@
 // Modules
 const express = require('express');
-const mongoose = require("mongoose");
+require('./db/mongoose');
 const bodyParser = require('body-parser')
 const ejs = require('ejs')
 const path = require('path')
@@ -14,23 +14,11 @@ const contactRouter = require("./Routers/contact");
 const app = express();
 app.use(express.json());
 
-
 // configuration for environment variables
 require("dotenv").config({ path: path.resolve(__dirname, '../config/.env') });
 
 //Port setup
 const port = process.env.PORT || 7000;
-
-// connect mongoose
-mongoose
-  .connect(process.env.MONGODB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-  })
-  .then(() => console.log("Connected to mongo server"))
-  .catch((err) => console.error(err));
 
 // set view engine and public directory path
 app.set('views', path.join(__dirname, './../templates/views'));

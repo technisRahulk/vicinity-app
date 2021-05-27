@@ -48,7 +48,6 @@ const trackData = async function(state, district, url, cb){
         return a.dist-b.dist;
     }
     var userCapital = stateToCapital.get(userState);
-    console.log('capital:', userCapital);
     var distOfCapsFromUser = [];
 
     for(var i=0;i<28;i++){
@@ -68,7 +67,6 @@ const trackData = async function(state, district, url, cb){
             search(imgURL, (err, res) => {
                 if(err) reject(err);
                 user_arr=res
-                console.log("*********");
                 console.log(user_arr);
                 resolve(user_arr);
             });
@@ -83,14 +81,11 @@ const trackData = async function(state, district, url, cb){
     let myMap = new Map();
 
     var duplicates = {};
-    console.log("^^^^^^^^");
     console.log(user_arr);
     
     const solve = function(w){
         States.findOne({name : distOfCapsFromUser[w].state.toLowerCase()})
         .then(state => {
-            // console.log(distOfCapsFromUser[w].state.toLowerCase());
-            // console.log(w,state.name,distOfCapsFromUser[w].state.toLowerCase());
             if(state){
                 var cities = state.cities
                 for(var i=0; i<cities.length; i++){
@@ -101,10 +96,8 @@ const trackData = async function(state, district, url, cb){
                                 if(!duplicates[city.photos[j].url]){
                                     duplicates[city.photos[j].url] = 1;
                                     curArr.push({city_id:i, photo_id:j, state:state.name, city:city.name,  score:simIndex(city.photos[j].tags,user_arr), url: city.photos[j].url});
-                                    // curArr.push({city_id:i, photo_id:j, score:simIndex(city.photos[j].tags,user_arr)});
                                 }
-                                // curArr.push({city_id:i, photo_id:j, state:state, city:city,  score:simIndex(city.photos[j].tags,user_arr)});
-                                //curArr.push({city_id:i, photo_id:j, state:state.name, city:city.name,  score:simIndex(city.photos[j].tags,user_arr), url: city.photos[j].url});
+
                                 if(curArr.length==6){
                                     minHeap.init(curArr);
                                     for(var k=0;k<curArr.length;k++){
@@ -135,9 +128,8 @@ const trackData = async function(state, district, url, cb){
                     Object.assign(temp,curArr);
                     globalArr.push(temp);
                     cb(globalArr);
-                    // console.log(globalArr);
                     return globalArr;
-                    // return console.log(curArr);
+
                 }
                 else if((w+1)%7==0){
                     let temp = [];
@@ -148,20 +140,17 @@ const trackData = async function(state, district, url, cb){
                 else return solve(w+1);
             } else {
                 console.log("The State doesn't has ample amount of scenic places "+w+" "+state);
-                // response.send("The State doesn't has ample amount of scenic places")
                 if(w==27){
                     let temp = [];
                     Object.assign(temp,curArr);
                     globalArr.push(temp);
                     cb(globalArr);
                     return globalArr;
-                    // return console.log(curArr);
                 }
                 else if((w+1)%7==0){
                     let temp = [];
                     Object.assign(temp,curArr);
                     globalArr.push(temp);
-                    // console.log(curArr);
                     return solve(w+1);
                 }
                 else return solve(w+1);
