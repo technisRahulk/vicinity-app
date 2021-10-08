@@ -82,14 +82,14 @@ const manhatten = async(ui) => {
         // start = window.performance.now();
         for(var i=0;i<uiQueryRes.length;i++){
             let mne = 0
-            // const photo = await Photos.findById(uiQueryRes[i])
-            let photo
-            for(var j=0;j<collecPhotos.length;j++){
-                if(collecPhotos[j][uiQueryRes[i]] !== undefined){
-                    photo = collecPhotos[j][uiQueryRes[i]] 
-                    break
-                }
-            }
+            const photo = await Photos.findById(uiQueryRes[i])
+            // let photo
+            // for(var j=0;j<collecPhotos.length;j++){
+            //     if(collecPhotos[j][uiQueryRes[i]] !== undefined){
+            //         photo = collecPhotos[j][uiQueryRes[i]] 
+            //         break
+            //     }
+            // }
             //find in summation of abs differences for each tags of ith image in uiQueryRes
             for(const tag of photo.tags){
                 mne += Math.abs(parseFloat(tag.prob)  - parseFloat(probDict[tag.name]))
